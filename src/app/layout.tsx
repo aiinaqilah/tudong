@@ -1,13 +1,17 @@
 import type { Metadata } from 'next';
 import './globals.css';
 
-import { Montserrat, Inter } from 'next/font/google';
+import { Montserrat, Inter, EB_Garamond } from 'next/font/google';
 import { Cormorant } from 'next/font/google';
 
 import Header from '@/components/layout/Header';
 import Script from 'next/script';
 import { Suspense } from 'react';
 import { cn } from "@/lib/utils";
+
+const montserratHeading = Montserrat({subsets:['latin'],variable:'--font-heading'});
+
+const ebGaramond = EB_Garamond({subsets:['latin'],variable:'--font-serif'});
 
 const inter = Inter({subsets:['latin'],variable:'--font-sans'});
 
@@ -31,7 +35,7 @@ export default function RootLayout({
   children: React.ReactNode
 }>) {
   return (
-    <html lang="en" className={cn("font-sans", inter.variable)}>
+    <html lang="en" className={cn( inter.variable, "font-serif", ebGaramond.variable, montserratHeading.variable)}>
       <body className={`${montserrat.className} antialiased bg-white min-h-[125vh]`}>
         <Header/>
         
