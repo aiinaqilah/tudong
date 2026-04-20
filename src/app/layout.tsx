@@ -1,12 +1,17 @@
 import type { Metadata } from 'next';
 import './globals.css';
 
-import { Montserrat } from 'next/font/google';
+import { Montserrat, Inter } from 'next/font/google';
 import { Cormorant } from 'next/font/google';
 
 import Header from '@/components/layout/Header';
 import Script from 'next/script';
 import { Suspense } from 'react';
+import { cn } from "@/lib/utils";
+
+const inter = Inter({subsets:['latin'],variable:'--font-sans'});
+
+
 // import { SanityLive } from '@/sanity/lib/live';
 // import HeaderCategorySelector from '@/components/layout/HeaderCategorySelector';
 // import Cart from '@/components/cart/Cart';
@@ -26,7 +31,7 @@ export default function RootLayout({
   children: React.ReactNode
 }>) {
   return (
-    <html lang="en">
+    <html lang="en" className={cn("font-sans", inter.variable)}>
       <body className={`${montserrat.className} antialiased bg-white min-h-[125vh]`}>
         <Header/>
         

@@ -64,7 +64,7 @@ const Header = () => {
       >
         <AnnouncementBar />
 
-        <div className="w-full flex justify-between items-center py-3 sm:py-4 bg-red/50 shadow-sm border-b border-gray-80 backdrop-blur-sm">
+        <div className="w-full flex justify-between items-center py-3 sm:py-4 bg-white/50 shadow-sm border-b border-gray-80 backdrop-blur-sm">
           <div className="flex justify-between items-center container mx-auto px-8 w-full">
             <div className="flex flex-1 justify-start items-center gap-4 sm:gap-6">
               <button className="text-white-700 hover:text-gray-900 md:hidden">
