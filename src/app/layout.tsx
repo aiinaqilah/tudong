@@ -8,6 +8,9 @@ import Header from '@/components/layout/Header';
 import Script from 'next/script';
 import { Suspense } from 'react';
 import { cn } from "@/lib/utils";
+import { getCurrentSession } from '@/actions/auth';
+import { getAllCategories } from '@/sanity/lib/client';
+import HeaderCategorySelector from '@/components/layout/HeaderCategorySelector';
 
 const montserratHeading = Montserrat({subsets:['latin'],variable:'--font-heading'});
 
@@ -16,10 +19,7 @@ const ebGaramond = EB_Garamond({subsets:['latin'],variable:'--font-serif'});
 const inter = Inter({subsets:['latin'],variable:'--font-sans'});
 
 
-// import { SanityLive } from '@/sanity/lib/live';
-// import HeaderCategorySelector from '@/components/layout/HeaderCategorySelector';
-// import Cart from '@/components/cart/Cart';
-// import AnalyticsTracker from '@/components/layout/AnalyticsTracker';
+import Cart from '@/components/cart/Cart';
 
 const montserrat = Montserrat({ subsets: ['latin'] });
 const cormorant = Cormorant({ subsets: ['latin'] });
@@ -29,17 +29,27 @@ export const metadata: Metadata = {
     description: 'Welcome to your ecommerce store',
 };
 
-export default function RootLayout({
+export default async function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode
 }>) {
+
+  const { user } = await getCurrentSession();
+
+  const categories = await getAllCategories();
+
   return (
     <html lang="en" className={cn( inter.variable, "font-serif", ebGaramond.variable, montserratHeading.variable)}>
       <body className={`${montserrat.className} antialiased bg-white min-h-[125vh]`}>
-        <Header/>
+        <Header 
+              
+            categorySelector={<HeaderCategorySelector />}
+        />
         
         {children}
+
+        <Cart />
       </body>
     </html>
   )

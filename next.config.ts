@@ -1,8 +1,16 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
-  /* config options here */
+  serverExternalPackages: ["@prisma/client", "prisma"],
   reactCompiler: true,
+  experimental: {
+    serverActions: {
+      bodySizeLimit: "20mb",
+    },
+  },
+  images: {
+    domains: ["cdn.sanity.io"],
+  },
 };
 
 export default nextConfig;

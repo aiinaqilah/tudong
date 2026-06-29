@@ -1,58 +1,54 @@
-
 generator client {
   provider = "prisma-client-js"
 }
 
 datasource db {
   provider = "postgresql"
-
 }
 
 model User {
-  id            String   @id @default(cuid())
-  email         String   @unique
-  emailVerified Boolean  @default(false)
+  id            String    @id @default(cuid())
+  email         String    @unique
+  emailVerified Boolean   @default(false)
   name          String?
   image         String?
-  createdAt     DateTime @default(now())
-  updatedAt     DateTime @updatedAt
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+  role          String    @default("user")
+  banned        Boolean?  @default(false)
+  banReason     String?
+  banExpires    DateTime?
 
-  sessions Session[]
-  accounts Account[]
-  cart     Cart?
+  sessions           Session[]
+  accounts           Account[]
+  favorites          Favorite[]
+  cart               Cart?
+  sellerApplication  SellerApplication?
 
   @@map("user")
 }
 
 model Session {
-  id           String   @id @default(cuid())
-  sessionToken String   @unique
-  userId       String
-  expires      DateTime
-  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-
+  id        String   @id @default(cuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
   expiresAt DateTime
-  token     String
+  token     String   @unique
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
   ipAddress String?
   userAgent String?
 
   @@index([userId])
-  @@unique([token])
   @@map("session")
 }
 
 model Account {
-  id                String @id @default(cuid())
-  userId            String
-  type              String
-  provider          String
-  providerAccountId String
-  user              User   @relation(fields: [userId], references: [id], onDelete: Cascade)
-
+  id                    String    @id @default(cuid())
+  userId                String
   accountId             String
   providerId            String
+  user                  User      @relation(fields: [userId], references: [id], onDelete: Cascade)
   accessToken           String?
   refreshToken          String?
   idToken               String?
@@ -63,7 +59,6 @@ model Account {
   createdAt             DateTime  @default(now())
   updatedAt             DateTime  @updatedAt
 
-  @@unique([provider, providerAccountId])
   @@index([userId])
   @@map("account")
 }
@@ -72,34 +67,22 @@ model CartLineItem {
   id              String @id @default(cuid())
   sanityProductId String
   quantity        Int
-
-  title String
-  price Float
-  image String
-
-  cartId String
-  cart   Cart   @relation(fields: [cartId], references: [id], onDelete: Cascade)
+  title           String
+  price           Float
+  image           String
+  cartId          String
+  cart            Cart   @relation(fields: [cartId], references: [id], onDelete: Cascade)
 
   @@index([cartId])
 }
 
 model Cart {
-  id String @id @default(cuid())
-
-  userId String? @unique
-  user   User?   @relation(fields: [userId], references: [id], onDelete: Cascade)
-
+  id        String         @id @default(cuid())
+  userId    String?        @unique
+  user      User?          @relation(fields: [userId], references: [id], onDelete: Cascade)
   items     CartLineItem[]
   createdAt DateTime       @default(now())
   updatedAt DateTime       @updatedAt
-}
-
-model VerificationToken {
-  identifier String
-  token      String   @unique
-  expires    DateTime
-
-  @@unique([identifier, token])
 }
 
 model Verification {
@@ -112,4 +95,34 @@ model Verification {
 
   @@index([identifier])
   @@map("verification")
+}
+
+model Favorite {
+  id        String   @id @default(cuid())
+  userId    String
+  productId String
+  createdAt DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, productId])
+}
+
+enum SellerApplicationStatus {
+  PENDING
+  APPROVED
+  REJECTED
+}
+
+model SellerApplication {
+  id          String                  @id @default(cuid())
+  userId      String                  @unique
+  user        User                    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  brandName   String
+  description String
+  instagram   String?
+  website     String?
+  status      SellerApplicationStatus @default(PENDING)
+  createdAt   DateTime                @default(now())
+  updatedAt   DateTime                @updatedAt
 }
