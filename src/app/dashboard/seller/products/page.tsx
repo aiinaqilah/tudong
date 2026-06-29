@@ -47,7 +47,13 @@ export default async function SellerProductsPage() {
                     {product.stock != null ? product.stock : (product.inStock ? "In Stock" : "Out of Stock")}
                   </td>
                   <td className="py-3 pr-4 text-gray-500">{product.category ?? "—"}</td>
-                  <td className="py-3">
+                  <td className="py-3 flex items-center gap-3">
+                    <Link
+                      href={`/dashboard/seller/products/${product._id}/edit`}
+                      className="text-xs text-blue-600 hover:underline"
+                    >
+                      Edit
+                    </Link>
                     <form action={deleteProduct.bind(null, product._id)}>
                       <button
                         type="submit"

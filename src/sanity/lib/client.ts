@@ -137,6 +137,43 @@ export const uploadProductImage = async (buffer: Buffer, filename: string, conte
 
 // --- Seller product management (write operations) ---
 
+export type FullSellerProduct = {
+  _id: string;
+  title: string;
+  description: string | null;
+  price: number;
+  stock: number | null;
+  inStock: boolean;
+  discount: number | null;
+  categoryId: string | null;
+  category: string | null;
+  brandId: string | null;
+  brand: string | null;
+  materialId: string | null;
+  sizeIds: string[];
+  color: { _key: string; name: string; hex: string }[];
+  image: { _key: string; _ref: string; url: string }[];
+  sellerId: string;
+};
+
+export const getSanityProductById = async (
+  id: string,
+  sellerId: string
+): Promise<FullSellerProduct | null> => {
+  const query = `*[_type == "product" && _id == $id && sellerId == $sellerId][0]{
+    _id, title, description, price, stock, inStock, discount, sellerId,
+    "categoryId": category->_id,
+    "category": category->title,
+    "brandId": brand->_id,
+    "brand": brand->name,
+    "materialId": material->_id,
+    "sizeIds": size[]->_id,
+    color,
+    "image": image[]{ _key, "url": asset->url, "_ref": asset->_id }
+  }`;
+  return client.fetch(query, { id, sellerId }, { cache: 'no-store' });
+};
+
 type SellerProduct = {
   _id: string;
   title: string;
@@ -222,10 +259,69 @@ export const deleteSanityProduct = async (productId: string) => {
 
 export const updateSanityProduct = async (
   productId: string,
-  data: Partial<{ title: string; description: string; price: number; stock: number }>
+  data: {
+    title?: string;
+    description?: string;
+    price?: number;
+    stock?: number;
+    inStock?: boolean;
+    discount?: number | null;
+    categoryId?: string;
+    materialId?: string;
+    colors?: { name: string; hex: string }[];
+    sizeIds?: string[];
+    newImageAssetIds?: string[];
+    keepImageKeys?: string[];
+    existingImages?: { _key: string; _ref: string }[];
+  }
 ) => {
-  const patch: Record<string, unknown> = { ...data };
-  if (data.stock !== undefined) patch.inStock = data.stock > 0;
+  const patch: Record<string, unknown> = {};
+
+  if (data.title !== undefined) patch.title = data.title;
+  if (data.description !== undefined) patch.description = data.description;
+  if (data.price !== undefined) patch.price = data.price;
+  if (data.stock !== undefined) {
+    patch.stock = data.stock;
+    patch.inStock = data.stock > 0;
+  }
+  if (data.inStock !== undefined) patch.inStock = data.inStock;
+  if (data.discount !== undefined) patch.discount = data.discount ?? null;
+  if (data.categoryId !== undefined) patch.category = data.categoryId
+    ? { _type: 'reference', _ref: data.categoryId }
+    : null;
+  if (data.materialId !== undefined) patch.material = data.materialId
+    ? { _type: 'reference', _ref: data.materialId }
+    : null;
+  if (data.colors !== undefined) {
+    patch.color = data.colors.map((c) => ({
+      _key: Math.random().toString(36).slice(2, 9),
+      name: c.name,
+      hex: c.hex,
+    }));
+  }
+  if (data.sizeIds !== undefined) {
+    patch.size = data.sizeIds.map((id) => ({
+      _type: 'reference',
+      _key: Math.random().toString(36).slice(2, 9),
+      _ref: id,
+    }));
+  }
+  if (data.keepImageKeys !== undefined || data.newImageAssetIds !== undefined) {
+    const kept = (data.existingImages ?? [])
+      .filter((img) => (data.keepImageKeys ?? []).includes(img._key))
+      .map((img) => ({
+        _type: 'image',
+        _key: img._key,
+        asset: { _type: 'reference', _ref: img._ref },
+      }));
+    const added = (data.newImageAssetIds ?? []).map((assetId) => ({
+      _type: 'image',
+      _key: Math.random().toString(36).slice(2, 9),
+      asset: { _type: 'reference', _ref: assetId },
+    }));
+    patch.image = [...kept, ...added];
+  }
+
   return writeClient.patch(productId).set(patch).commit();
 }
 

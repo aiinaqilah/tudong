@@ -100,6 +100,13 @@ export const product = defineType({
             initialValue: true,
         }),
         defineField({
+            name: 'discount',
+            title: 'Discount (%)',
+            type: 'number',
+            description: 'Seller-set discount percentage off the listed price (0–100)',
+            validation: (Rule) => Rule.min(0).max(100),
+        }),
+        defineField({
             name: 'sellerId',
             title: 'Seller ID',
             type: 'string',
