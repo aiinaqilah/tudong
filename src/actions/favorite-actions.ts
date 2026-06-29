@@ -40,12 +40,12 @@ export async function removeFavorite(productId: string) {
   return { success: true };
 }
 
-export async function removeFavoriteAction(formData: FormData) {
+export async function removeFavoriteAction(formData: FormData): Promise<void> {
   const { user } = await getCurrentSession();
-  if (!user) return { error: "Not authenticated" };
+  if (!user) return;
 
   const productId = formData.get("productId") as string;
-  if (!productId) return { error: "Missing productId" };
+  if (!productId) return;
 
   await prisma.favorite.deleteMany({
     where: { userId: user.id, productId },

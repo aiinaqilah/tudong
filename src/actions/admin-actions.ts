@@ -23,16 +23,16 @@ export async function getAllUsers() {
   });
 }
 
-export async function updateUserRole(userId: string, formData: FormData) {
+export async function updateUserRole(userId: string, formData: FormData): Promise<void> {
   const { user } = await getCurrentSession();
-  if (!user) return { error: "Not authenticated" };
+  if (!user) return;
 
   const role = (user as { role?: string }).role;
-  if (role !== "admin") return { error: "Not authorized" };
+  if (role !== "admin") return;
 
   const newRole = formData.get("role") as string;
   const validRoles = ["user", "seller", "admin"];
-  if (!validRoles.includes(newRole)) return { error: "Invalid role" };
+  if (!validRoles.includes(newRole)) return;
 
   await prisma.user.update({
     where: { id: userId },
@@ -40,5 +40,4 @@ export async function updateUserRole(userId: string, formData: FormData) {
   });
 
   revalidatePath("/dashboard/admin/users");
-  return { success: true };
 }

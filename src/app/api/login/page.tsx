@@ -70,7 +70,7 @@ export default function SignInForm() {
                 <CardFooter className="justify-center">
                     <p className="text-sm text-muted-foreground">
                         Don't have an account?{" "}
-                        <Link href="/sign-up" className="text-foreground underline underline-offset-4">Sign up</Link>
+                        <Link href="/api/sign-up" className="text-foreground underline underline-offset-4">Sign up</Link>
                     </p>
                 </CardFooter>
             </Card>
