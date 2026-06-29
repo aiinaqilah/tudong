@@ -155,7 +155,7 @@ export const syncCartWithUser = async (cartId: string | null) => {
 
     for(const item of existingAnonymousCart.items) {
         const existingItem = existingUserCart.items.find(
-            (i) => i.sanityProductId === item.sanityProductId
+            (i: { sanityProductId: string }) => i.sanityProductId === item.sanityProductId
         );
 
         if(existingItem) {
