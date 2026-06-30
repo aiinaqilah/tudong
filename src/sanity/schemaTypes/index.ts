@@ -7,6 +7,7 @@ import { promotionCode } from './schemas/promotionCode'
 import { type SchemaTypeDefinition } from 'sanity'
 import { size } from './schemas/size'
 import { material } from './schemas/material'
+import { collection } from './schemas/collection'
 
 export const schema: { types: SchemaTypeDefinition[] } = {
   types: [
@@ -18,6 +19,7 @@ export const schema: { types: SchemaTypeDefinition[] } = {
     brand,
     material,
     size,
+    collection,
 
     shippingAddress,
     orderItem,

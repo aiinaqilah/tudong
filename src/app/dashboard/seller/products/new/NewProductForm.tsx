@@ -10,9 +10,12 @@ type Options = {
   categories: ProductFormCategoryOption[];
   materials: ProductFormOption[];
   sizes: ProductFormOption[];
+  collections: ProductFormCategoryOption[];
 };
 
 type Color = { name: string; hex: string };
+
+const MAX_COLORS = 3;
 
 export default function NewProductForm({ options, sellerBrand }: { options: Options; sellerBrand: SellerBrand | null }) {
   const router = useRouter();
@@ -38,7 +41,7 @@ export default function NewProductForm({ options, sellerBrand }: { options: Opti
   };
 
   const addColor = () => {
-    if (!colorName.trim()) return;
+    if (!colorName.trim() || colors.length >= MAX_COLORS) return;
     setColors((prev) => [...prev, { name: colorName.trim(), hex: colorHex }]);
     setColorName("");
     setColorHex("#000000");
@@ -176,6 +179,15 @@ export default function NewProductForm({ options, sellerBrand }: { options: Opti
                 ))}
               </select>
             </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">Collection</label>
+              <select name="collectionId" className={selectCls}>
+                <option value="">— Select —</option>
+                {options.collections.map((c) => (
+                  <option key={c._id} value={c._id}>{c.title}</option>
+                ))}
+              </select>
+            </div>
           </div>
         </Section>
 
@@ -209,36 +221,45 @@ export default function NewProductForm({ options, sellerBrand }: { options: Opti
 
         {/* Colors */}
         <Section title="Colours">
-          <div className="flex gap-2 items-end">
-            <div className="flex-1">
-              <label className="block text-xs text-gray-500 mb-1">Colour name</label>
-              <input
-                type="text"
-                value={colorName}
-                onChange={(e) => setColorName(e.target.value)}
-                onKeyDown={(e) => e.key === "Enter" && (e.preventDefault(), addColor())}
-                placeholder="e.g. Midnight Blue"
-                className="w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-black"
-              />
+          <p className="text-xs text-gray-400">
+            Add up to {MAX_COLORS} colours ({colors.length}/{MAX_COLORS})
+          </p>
+          {colors.length < MAX_COLORS ? (
+            <div className="flex gap-2 items-end">
+              <div className="flex-1">
+                <label className="block text-xs text-gray-500 mb-1">Colour name</label>
+                <input
+                  type="text"
+                  value={colorName}
+                  onChange={(e) => setColorName(e.target.value)}
+                  onKeyDown={(e) => e.key === "Enter" && (e.preventDefault(), addColor())}
+                  placeholder="e.g. Midnight Blue"
+                  className="w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-black"
+                />
+              </div>
+              <div>
+                <label className="block text-xs text-gray-500 mb-1">Hex</label>
+                <input
+                  type="color"
+                  value={colorHex}
+                  onChange={(e) => setColorHex(e.target.value)}
+                  className="w-10 h-9 rounded border border-gray-300 cursor-pointer"
+                />
+              </div>
+              <button
+                type="button"
+                onClick={addColor}
+                className="flex items-center gap-1 px-3 py-2 bg-black text-white text-sm rounded-md hover:bg-gray-800 transition-colors"
+              >
+                <Plus className="w-4 h-4" />
+                Add
+              </button>
             </div>
-            <div>
-              <label className="block text-xs text-gray-500 mb-1">Hex</label>
-              <input
-                type="color"
-                value={colorHex}
-                onChange={(e) => setColorHex(e.target.value)}
-                className="w-10 h-9 rounded border border-gray-300 cursor-pointer"
-              />
-            </div>
-            <button
-              type="button"
-              onClick={addColor}
-              className="flex items-center gap-1 px-3 py-2 bg-black text-white text-sm rounded-md hover:bg-gray-800 transition-colors"
-            >
-              <Plus className="w-4 h-4" />
-              Add
-            </button>
-          </div>
+          ) : (
+            <p className="text-xs text-amber-600">
+              Maximum of {MAX_COLORS} colours reached. Remove one to add another.
+            </p>
+          )}
 
           {colors.length > 0 && (
             <div className="flex flex-wrap gap-2 mt-3">

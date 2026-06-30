@@ -2,6 +2,7 @@ import { createClient } from 'next-sanity'
 
 import { apiVersion, dataset, projectId } from '../env'
 import { Product, ProductCategory } from '@/sanity.types'
+import { getColorFamily } from '@/lib/color'
 
 export const client = createClient({
   projectId,
@@ -106,18 +107,56 @@ export const getProductsByIds = async (ids: string[]) => {
   return client.fetch<Product[]>(query, { ids }, { next: { revalidate: REVALIDATE_PRODUCTS } });
 }
 
+export const getRecommendedProducts = async (
+  product: Product,
+  limit = 4
+): Promise<Product[]> => {
+  const productColors = (product.color ?? [])
+    .map((c) => c.hex)
+    .filter((hex): hex is string => Boolean(hex));
+
+  if (productColors.length === 0) return [];
+
+  const targetFamilies = new Set(productColors.map(getColorFamily));
+
+  const query = `*[_type == "product" && _id != $id]{
+    ...,
+    image[]{ _key, _type, asset-> }
+  }`;
+  const candidates = await client.fetch<Product[]>(
+    query,
+    { id: product._id },
+    { next: { revalidate: REVALIDATE_PRODUCTS } }
+  );
+
+  const scored = candidates
+    .map((candidate) => {
+      const families = (candidate.color ?? [])
+        .map((c) => c.hex)
+        .filter((hex): hex is string => Boolean(hex))
+        .map(getColorFamily);
+      const matches = families.filter((f) => targetFamilies.has(f)).length;
+      return { candidate, matches };
+    })
+    .filter((entry) => entry.matches > 0)
+    .sort((a, b) => b.matches - a.matches);
+
+  return scored.slice(0, limit).map((entry) => entry.candidate);
+};
+
 // --- Product form reference options ---
 
 export type ProductFormOption = { _id: string; name: string };
 export type ProductFormCategoryOption = { _id: string; title: string };
 
 export const getProductFormOptions = async () => {
-  const [categories, materials, sizes] = await Promise.all([
+  const [categories, materials, sizes, collections] = await Promise.all([
     client.fetch<ProductFormCategoryOption[]>(`*[_type == "productCategory"]{ _id, title } | order(title asc)`, {}, { cache: 'no-store' }),
     client.fetch<ProductFormOption[]>(`*[_type == "material"]{ _id, name } | order(name asc)`, {}, { cache: 'no-store' }),
     client.fetch<ProductFormOption[]>(`*[_type == "size"]{ _id, name } | order(name asc)`, {}, { cache: 'no-store' }),
+    client.fetch<ProductFormCategoryOption[]>(`*[_type == "collection"]{ _id, title } | order(title asc)`, {}, { cache: 'no-store' }),
   ]);
-  return { categories, materials, sizes };
+  return { categories, materials, sizes, collections };
 }
 
 export type SellerBrand = { _id: string; name: string; sellerId: string };
@@ -150,6 +189,7 @@ export type FullSellerProduct = {
   brandId: string | null;
   brand: string | null;
   materialId: string | null;
+  collectionId: string | null;
   sizeIds: string[];
   color: { _key: string; name: string; hex: string }[];
   image: { _key: string; _ref: string; url: string }[];
@@ -167,6 +207,7 @@ export const getSanityProductById = async (
     "brandId": brand->_id,
     "brand": brand->name,
     "materialId": material->_id,
+    "collectionId": collection->_id,
     "sizeIds": size[]->_id,
     color,
     "image": image[]{ _key, "url": asset->url, "_ref": asset->_id }
@@ -208,6 +249,7 @@ export const createSanityProduct = async (data: {
   categoryId?: string;
   brandId?: string;
   materialId?: string;
+  collectionId?: string;
   colors?: { name: string; hex: string }[];
   sizeIds?: string[];
 }) => {
@@ -236,6 +278,7 @@ export const createSanityProduct = async (data: {
     ...(data.categoryId ? { category: { _type: 'reference', _ref: data.categoryId } } : {}),
     ...(data.brandId ? { brand: { _type: 'reference', _ref: data.brandId } } : {}),
     ...(data.materialId ? { material: { _type: 'reference', _ref: data.materialId } } : {}),
+    ...(data.collectionId ? { collection: { _type: 'reference', _ref: data.collectionId } } : {}),
     ...(data.colors?.length ? {
       color: data.colors.map(c => ({
         _key: Math.random().toString(36).slice(2, 9),
@@ -268,6 +311,7 @@ export const updateSanityProduct = async (
     discount?: number | null;
     categoryId?: string;
     materialId?: string;
+    collectionId?: string;
     colors?: { name: string; hex: string }[];
     sizeIds?: string[];
     newImageAssetIds?: string[];
@@ -291,6 +335,9 @@ export const updateSanityProduct = async (
     : null;
   if (data.materialId !== undefined) patch.material = data.materialId
     ? { _type: 'reference', _ref: data.materialId }
+    : null;
+  if (data.collectionId !== undefined) patch.collection = data.collectionId
+    ? { _type: 'reference', _ref: data.collectionId }
     : null;
   if (data.colors !== undefined) {
     patch.color = data.colors.map((c) => ({

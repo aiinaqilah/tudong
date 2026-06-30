@@ -56,9 +56,17 @@ export const product = defineType({
             to: [{ type: 'material' }],
         }),
         defineField({
+            name: 'collection',
+            title: 'Collection',
+            type: 'reference',
+            to: [{ type: 'collection' }],
+        }),
+        defineField({
             name: 'color',
             title: 'Color',
             type: 'array',
+            description: 'Up to 3 colours present in this product',
+            validation: (Rule) => Rule.max(3),
             of: [
                 {
                     type: 'object',

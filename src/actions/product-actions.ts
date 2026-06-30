@@ -26,6 +26,7 @@ export async function createProduct(formData: FormData) {
   const categoryId = (formData.get("categoryId") as string) || undefined;
   const brandId = (formData.get("brandId") as string) || undefined;
   const materialId = (formData.get("materialId") as string) || undefined;
+  const collectionId = (formData.get("collectionId") as string) || undefined;
   const sizeIds = formData.getAll("sizeIds") as string[];
   const colorsJson = formData.get("colors") as string;
   const colors: { name: string; hex: string }[] = colorsJson ? JSON.parse(colorsJson) : [];
@@ -52,6 +53,7 @@ export async function createProduct(formData: FormData) {
       categoryId,
       brandId,
       materialId,
+      collectionId,
       colors,
       sizeIds,
     });
@@ -104,6 +106,7 @@ export async function updateProduct(productId: string, formData: FormData) {
   const discount = discountRaw !== "" ? parseFloat(discountRaw) : null;
   const categoryId = (formData.get("categoryId") as string) || undefined;
   const materialId = (formData.get("materialId") as string) || undefined;
+  const collectionId = (formData.get("collectionId") as string) || undefined;
   const sizeIds = formData.getAll("sizeIds") as string[];
   const colorsJson = formData.get("colors") as string;
   const colors: { name: string; hex: string }[] = colorsJson ? JSON.parse(colorsJson) : [];
@@ -132,6 +135,7 @@ export async function updateProduct(productId: string, formData: FormData) {
       discount,
       categoryId,
       materialId,
+      collectionId,
       colors,
       sizeIds,
       newImageAssetIds,

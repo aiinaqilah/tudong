@@ -1,10 +1,11 @@
 import SalesCampaignBanner from '@/components/layout/SalesCampaignBanner';
-import { getProductById, getActiveCampaigns } from '@/sanity/lib/client';
+import { getProductById, getActiveCampaigns, getRecommendedProducts } from '@/sanity/lib/client';
 import { getUserFavorites } from '@/actions/favorite-actions';
 import { computeCampaignMap } from '@/lib/utils';
 import { Home, ChevronRight } from 'lucide-react';
 import Link from 'next/link';
 import ProductDetailsClient from './ProductDetailsClient';
+import ProductRecommendations from '@/components/product/ProductRecommendations';
 
 const ProductPage = async ({ params }: { params: Promise<{ id: string }> }) => {
     const { id } = await params;
@@ -13,6 +14,8 @@ const ProductPage = async ({ params }: { params: Promise<{ id: string }> }) => {
         getActiveCampaigns(),
         getUserFavorites(),
     ]);
+
+    const recommendations = product ? await getRecommendedProducts(product) : [];
 
     const isFavorited = favorites.some((f) => f.productId === id);
     const campaignMap = product ? computeCampaignMap([product], campaigns) : new Map<string, number>();
@@ -67,6 +70,8 @@ const ProductPage = async ({ params }: { params: Promise<{ id: string }> }) => {
 
             {/* Client Component for interactive product details */}
             <ProductDetailsClient product={product} isFavorited={isFavorited} effectivePrice={effectivePrice} />
+
+            <ProductRecommendations products={recommendations} />
         </div>
     );
 };
