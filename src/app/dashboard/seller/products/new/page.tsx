@@ -6,7 +6,7 @@ export default async function NewProductPage() {
   const { user } = await getCurrentSession();
 
   const [options, sellerBrand] = await Promise.all([
-    getProductFormOptions(),
+    getProductFormOptions(user?.id),
     user ? getSellerBrand(user.id) : Promise.resolve(null),
   ]);
 

@@ -152,14 +152,50 @@ export const getRecommendedProducts = async (
 export type ProductFormOption = { _id: string; name: string };
 export type ProductFormCategoryOption = { _id: string; title: string };
 
-export const getProductFormOptions = async () => {
+export const getProductFormOptions = async (sellerId?: string) => {
   const [categories, materials, sizes, collections] = await Promise.all([
     client.fetch<ProductFormCategoryOption[]>(`*[_type == "productCategory"]{ _id, title } | order(title asc)`, {}, { cache: 'no-store' }),
     client.fetch<ProductFormOption[]>(`*[_type == "material"]{ _id, name } | order(name asc)`, {}, { cache: 'no-store' }),
     client.fetch<ProductFormOption[]>(`*[_type == "size"]{ _id, name } | order(name asc)`, {}, { cache: 'no-store' }),
-    client.fetch<ProductFormCategoryOption[]>(`*[_type == "collection"]{ _id, title } | order(title asc)`, {}, { cache: 'no-store' }),
+    sellerId
+      ? client.fetch<ProductFormCategoryOption[]>(`*[_type == "collection" && sellerId == $sellerId]{ _id, title } | order(title asc)`, { sellerId }, { cache: 'no-store' })
+      : client.fetch<ProductFormCategoryOption[]>(`*[_type == "collection"]{ _id, title } | order(title asc)`, {}, { cache: 'no-store' }),
   ]);
   return { categories, materials, sizes, collections };
+}
+
+export type SellerCollection = { _id: string; title: string; description: string | null };
+
+export const getSellerCollections = async (sellerId: string): Promise<SellerCollection[]> => {
+  return client.fetch(
+    `*[_type == "collection" && sellerId == $sellerId] | order(title asc){ _id, title, description }`,
+    { sellerId },
+    { cache: 'no-store' }
+  );
+}
+
+export const createSellerCollection = async (data: {
+  title: string;
+  description?: string;
+  sellerId: string;
+}) => {
+  const slug = data.title
+    .toLowerCase()
+    .replace(/\s+/g, '-')
+    .replace(/[^a-z0-9-]/g, '')
+    + '-' + Math.random().toString(36).slice(2, 7);
+
+  return writeClient.create({
+    _type: 'collection',
+    title: data.title,
+    description: data.description ?? '',
+    sellerId: data.sellerId,
+    slug: { _type: 'slug', current: slug },
+  });
+}
+
+export const deleteSellerCollection = async (collectionId: string) => {
+  return writeClient.delete(collectionId);
 }
 
 export type SellerBrand = { _id: string; name: string; sellerId: string };

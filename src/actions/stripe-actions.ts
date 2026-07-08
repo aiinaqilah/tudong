@@ -64,9 +64,9 @@ export const createCheckoutSession = async (cartId: string, promoCode?: string) 
                     type: 'fixed_amount',
                     fixed_amount: {
                         currency: 'myr',
-                        amount: subtotal >= 15 ? 0 : 5 * 100
+                        amount: subtotal >= 150 ? 0 : 5 * 100
                     },
-                    display_name: subtotal >= 15 ? 'Free Shipping' : 'Shipping',
+                    display_name: subtotal >= 150 ? 'Free Shipping' : 'Shipping',
                     delivery_estimate: {
                         minimum: { unit: 'business_day', value: 3 },
                         maximum: { unit: 'business_day', value: 5 },

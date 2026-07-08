@@ -31,5 +31,11 @@ export const collection = defineType({
             title: "Cover Image",
             type: "image",
         }),
+        defineField({
+            name: "sellerId",
+            title: "Seller ID",
+            type: "string",
+            description: "User ID of the seller who owns this collection",
+        }),
     ],
 })

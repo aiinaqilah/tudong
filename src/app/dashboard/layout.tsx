@@ -13,6 +13,7 @@ const userLinks = [
 const sellerLinks = [
   { href: "/dashboard/seller", label: "Overview" },
   { href: "/dashboard/seller/products", label: "My Products" },
+  { href: "/dashboard/seller/collections", label: "Collections" },
   { href: "/dashboard/seller/orders", label: "Orders" },
 ];
 

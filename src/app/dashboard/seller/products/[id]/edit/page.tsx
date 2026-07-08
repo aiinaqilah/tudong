@@ -15,7 +15,7 @@ export default async function EditProductPage({
 
   const [product, options, sellerBrand] = await Promise.all([
     getSellerProduct(id),
-    getProductFormOptions(),
+    getProductFormOptions(user.id),
     getSellerBrand(user.id),
   ]);
 
