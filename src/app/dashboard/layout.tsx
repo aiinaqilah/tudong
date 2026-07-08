@@ -45,9 +45,9 @@ export default async function DashboardLayout({
     : user.email.slice(0, 2).toUpperCase();
 
   return (
-    <div className="min-h-screen flex bg-gray-50">
-      {/* Sidebar */}
-      <aside className="w-60 shrink-0 bg-gray-900 flex flex-col">
+    <div className="min-h-screen flex flex-col md:flex-row bg-gray-50">
+      {/* Sidebar / top bar */}
+      <aside className="w-full md:w-60 md:shrink-0 bg-gray-900 flex flex-col md:min-h-screen">
         {/* Brand bar */}
         <div className="bg-black px-4 py-3 text-center">
           <Link href="/" className="text-white text-sm font-bold tracking-widest uppercase">
@@ -55,35 +55,38 @@ export default async function DashboardLayout({
           </Link>
         </div>
 
-        {/* User info */}
-        <div className="px-4 py-5 border-b border-white/10">
+        {/* User info — full on desktop, compact row on mobile */}
+        <div className="hidden md:block px-4 py-5 border-b border-white/10">
           <div className="flex items-center gap-3">
             <div className="w-9 h-9 rounded-full bg-gradient-to-br from-red-500 to-orange-500 flex items-center justify-center text-white text-sm font-bold shrink-0">
               {initials}
             </div>
             <div className="min-w-0">
-              <p className="text-white text-sm font-semibold truncate">
-                {user.name ?? "User"}
-              </p>
+              <p className="text-white text-sm font-semibold truncate">{user.name ?? "User"}</p>
               <p className="text-gray-400 text-xs truncate">{user.email}</p>
             </div>
           </div>
         </div>
-
-        {/* Role label */}
-        <div className="px-4 pt-5 pb-2">
-          <p className="text-[10px] font-semibold uppercase tracking-widest text-gray-500">
-            {role}
-          </p>
+        <div className="md:hidden flex items-center gap-3 px-4 py-2.5 border-b border-white/10">
+          <div className="w-7 h-7 rounded-full bg-gradient-to-br from-red-500 to-orange-500 flex items-center justify-center text-white text-xs font-bold shrink-0">
+            {initials}
+          </div>
+          <p className="text-white text-sm font-semibold truncate flex-1">{user.name ?? "User"}</p>
+          <span className="text-[10px] font-semibold uppercase tracking-widest text-gray-500">{role}</span>
         </div>
 
-        {/* Nav */}
-        <div className="px-3 flex-1">
+        {/* Role label — desktop only */}
+        <div className="hidden md:block px-4 pt-5 pb-2">
+          <p className="text-[10px] font-semibold uppercase tracking-widest text-gray-500">{role}</p>
+        </div>
+
+        {/* Nav — horizontal scroll on mobile, vertical on desktop */}
+        <div className="px-3 md:flex-1 overflow-x-auto">
           <DashboardNav links={links} />
         </div>
 
-        {/* Footer */}
-        <div className="px-3 py-4 border-t border-white/10">
+        {/* Footer — desktop only */}
+        <div className="hidden md:block px-3 py-4 border-t border-white/10">
           <Link
             href="/"
             className="block rounded-md px-3 py-2.5 text-sm text-gray-400 hover:text-white hover:bg-white/10 transition-colors"
@@ -94,7 +97,7 @@ export default async function DashboardLayout({
       </aside>
 
       {/* Main content */}
-      <main className="flex-1 min-w-0 p-8">{children}</main>
+      <main className="flex-1 min-w-0 p-4 md:p-8">{children}</main>
     </div>
   );
 }

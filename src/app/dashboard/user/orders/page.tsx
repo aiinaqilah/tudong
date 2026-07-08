@@ -63,7 +63,7 @@ export default async function UserOrdersPage() {
                     <p className="text-[10px] uppercase tracking-widest text-gray-400 font-semibold">
                       Total
                     </p>
-                    <p className="text-sm font-bold text-red-500">
+                    <p className="text-sm font-bold text-green-600">
                       RM {order.totalPrice.toFixed(2)}
                     </p>
                   </div>
@@ -105,13 +105,14 @@ export default async function UserOrdersPage() {
                 </div>
               )}
 
-              {/* Tracking info + Order Received button */}
-              {(order.trackingNumber || order.trackingUrl || order.status === "SHIPPED") && (
+              {/* Tracking info + Order Received / Order Complete */}
+              {(order.trackingNumber || order.trackingUrl || order.status === "SHIPPED" || order.status === "DELIVERED") && (
                 <div className="px-6 py-3 border-t border-gray-100 flex items-center justify-between gap-3 flex-wrap">
                   <div className="flex items-center gap-3 flex-wrap">
                     {order.trackingNumber && (
-                      <span className="text-xs font-mono bg-gray-100 text-gray-700 px-2 py-1 rounded">
-                        {order.trackingNumber}
+                      <span className="text-xs text-gray-500">
+                        Tracking number:{" "}
+                        <span className="font-mono text-gray-800">{order.trackingNumber}</span>
                       </span>
                     )}
                     {order.trackingUrl && (
@@ -135,6 +136,11 @@ export default async function UserOrdersPage() {
                         Order Received
                       </button>
                     </form>
+                  )}
+                  {order.status === "DELIVERED" && (
+                    <span className="text-xs font-semibold text-green-700 bg-green-100 px-4 py-1.5 rounded-full">
+                      Order Complete
+                    </span>
                   )}
                 </div>
               )}
