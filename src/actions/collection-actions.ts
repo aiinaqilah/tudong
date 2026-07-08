@@ -15,21 +15,20 @@ export async function getMyCollections() {
   return getSellerCollections(user.id);
 }
 
-export async function createCollection(formData: FormData) {
+export async function createCollection(formData: FormData): Promise<void> {
   const { user } = await getCurrentSession();
-  if (!user) return { error: "Not authenticated" };
+  if (!user) return;
 
   const title = (formData.get("title") as string).trim();
-  if (!title) return { error: "Title is required" };
+  if (!title) return;
 
   const description = (formData.get("description") as string | null)?.trim() || undefined;
 
   try {
     await createSellerCollection({ title, description, sellerId: user.id });
     revalidatePath("/dashboard/seller/collections");
-    return { success: true };
   } catch {
-    return { error: "Failed to create collection" };
+    // silently fail — form will just not refresh
   }
 }
 
