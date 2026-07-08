@@ -53,6 +53,18 @@ export const order = defineType({
             of: [{ type: 'orderItem' }],
         }),
         defineField({
+            name: 'trackingNumber',
+            title: 'Tracking Number',
+            type: 'string',
+            description: 'e.g. EE123456789MY (Poslaju) or JT1234567890 (J&T)',
+        }),
+        defineField({
+            name: 'trackingUrl',
+            title: 'Shipping Tracking URL',
+            type: 'url',
+            description: 'Poslaju / J&T or other courier tracking link',
+        }),
+        defineField({
             name: 'status',
             title: 'Order Status',
             type: 'string',

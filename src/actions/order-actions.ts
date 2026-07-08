@@ -29,6 +29,13 @@ export type SanityOrder = {
     country?: string;
   } | null;
   orderItems: SanityOrderItem[];
+  trackingNumber: string | null;
+  trackingUrl: string | null;
+};
+
+export type SanityOrderDetail = SanityOrder & {
+  stripePaymentIntentId: string | null;
+  stripeCheckoutSessionId: string | null;
 };
 
 const ORDER_FIELDS = `
@@ -46,7 +53,15 @@ const ORDER_FIELDS = `
     quantity,
     price,
     "productTitle": product->title
-  }
+  },
+  trackingNumber,
+  trackingUrl
+`;
+
+const ORDER_DETAIL_FIELDS = `
+  ${ORDER_FIELDS},
+  stripePaymentIntentId,
+  stripeCheckoutSessionId
 `;
 
 export async function getUserOrders(): Promise<SanityOrder[]> {
@@ -88,6 +103,27 @@ export async function getAllOrders(): Promise<SanityOrder[]> {
   );
 }
 
+export async function getSellerOrderById(orderId: string): Promise<SanityOrderDetail | null> {
+  const { user } = await getCurrentSession();
+  if (!user) return null;
+
+  const role = (user as { role?: string }).role;
+
+  if (role === "admin") {
+    return client.fetch(
+      `*[_type == "order" && _id == $orderId][0]{ ${ORDER_DETAIL_FIELDS} }`,
+      { orderId },
+      { cache: "no-store" }
+    );
+  }
+
+  return client.fetch(
+    `*[_type == "order" && _id == $orderId && count(orderItems[product->sellerId == $sellerId]) > 0][0]{ ${ORDER_DETAIL_FIELDS} }`,
+    { orderId, sellerId: user.id },
+    { cache: "no-store" }
+  );
+}
+
 export async function updateOrderStatus(orderId: string, formData: FormData): Promise<void> {
   const { user } = await getCurrentSession();
   if (!user) return;
@@ -119,4 +155,66 @@ export async function updateOrderStatus(orderId: string, formData: FormData): Pr
   });
 
   await writeClient.patch(orderId).set({ status }).commit();
+}
+
+export async function confirmOrderDelivered(orderId: string): Promise<void> {
+  const { user } = await getCurrentSession();
+  if (!user) return;
+
+  // Confirm this order belongs to the logged-in customer and is currently SHIPPED
+  const result = await client.fetch<{ count: number }>(
+    `{ "count": count(*[_type == "order" && _id == $orderId && customerId == $userId && status == "SHIPPED"]) }`,
+    { orderId, userId: user.id },
+    { cache: "no-store" }
+  );
+  if (!result?.count) return;
+
+  const { createClient } = await import("next-sanity");
+  const { apiVersion, dataset, projectId } = await import("@/sanity/env");
+
+  const writeClient = createClient({
+    projectId,
+    dataset,
+    apiVersion,
+    useCdn: false,
+    token: process.env.SANITY_API_WRITE_TOKEN,
+  });
+
+  await writeClient.patch(orderId).set({ status: "DELIVERED" }).commit();
+}
+
+export async function updateTrackingInfo(orderId: string, formData: FormData): Promise<void> {
+  const { user } = await getCurrentSession();
+  if (!user) return;
+
+  const trackingNumber = (formData.get("trackingNumber") as string).trim();
+  const trackingUrl = (formData.get("trackingUrl") as string).trim();
+  if (trackingUrl && !trackingUrl.startsWith("http")) return;
+
+  const role = (user as { role?: string }).role;
+
+  if (role !== "admin") {
+    const result = await client.fetch<{ count: number }>(
+      `{ "count": count(*[_type == "order" && _id == $orderId && count(orderItems[product->sellerId == $sellerId]) > 0]) }`,
+      { orderId, sellerId: user.id },
+      { cache: "no-store" }
+    );
+    if (!result?.count) return;
+  }
+
+  const { createClient } = await import("next-sanity");
+  const { apiVersion, dataset, projectId } = await import("@/sanity/env");
+
+  const writeClient = createClient({
+    projectId,
+    dataset,
+    apiVersion,
+    useCdn: false,
+    token: process.env.SANITY_API_WRITE_TOKEN,
+  });
+
+  await writeClient.patch(orderId).set({
+    trackingNumber: trackingNumber || null,
+    trackingUrl: trackingUrl || null,
+  }).commit();
 }

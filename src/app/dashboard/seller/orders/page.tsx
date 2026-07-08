@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { getSellerOrders, updateOrderStatus } from "@/actions/order-actions";
 
 const STATUSES = ["PROCESSING", "SHIPPED", "DELIVERED", "CANCELLED"] as const;
@@ -22,7 +23,8 @@ export default async function SellerOrdersPage() {
                 <th className="pb-2 pr-4">Total</th>
                 <th className="pb-2 pr-4">Status</th>
                 <th className="pb-2 pr-4">Date</th>
-                <th className="pb-2">Update</th>
+                <th className="pb-2 pr-4">Update</th>
+                <th className="pb-2"></th>
               </tr>
             </thead>
             <tbody>
@@ -38,7 +40,7 @@ export default async function SellerOrdersPage() {
                   <td className="py-3 pr-4 text-gray-500">
                     {new Date(order.orderDate).toLocaleDateString()}
                   </td>
-                  <td className="py-3">
+                  <td className="py-3 pr-4">
                     <form action={updateOrderStatus.bind(null, order._id)}>
                       <select
                         name="status"
@@ -53,6 +55,14 @@ export default async function SellerOrdersPage() {
                         Save
                       </button>
                     </form>
+                  </td>
+                  <td className="py-3">
+                    <Link
+                      href={`/dashboard/seller/orders/${order._id}`}
+                      className="text-xs text-blue-600 hover:underline whitespace-nowrap"
+                    >
+                      View →
+                    </Link>
                   </td>
                 </tr>
               ))}

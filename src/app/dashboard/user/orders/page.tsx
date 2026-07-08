@@ -1,4 +1,4 @@
-import { getUserOrders } from "@/actions/order-actions";
+import { getUserOrders, confirmOrderDelivered } from "@/actions/order-actions";
 import Link from "next/link";
 
 export default async function UserOrdersPage() {
@@ -102,6 +102,40 @@ export default async function UserOrdersPage() {
                     order.shippingAddress.state,
                     order.shippingAddress.postalCode,
                   ].filter(Boolean).join(", ")}
+                </div>
+              )}
+
+              {/* Tracking info + Order Received button */}
+              {(order.trackingNumber || order.trackingUrl || order.status === "SHIPPED") && (
+                <div className="px-6 py-3 border-t border-gray-100 flex items-center justify-between gap-3 flex-wrap">
+                  <div className="flex items-center gap-3 flex-wrap">
+                    {order.trackingNumber && (
+                      <span className="text-xs font-mono bg-gray-100 text-gray-700 px-2 py-1 rounded">
+                        {order.trackingNumber}
+                      </span>
+                    )}
+                    {order.trackingUrl && (
+                      <a
+                        href={order.trackingUrl}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="text-xs font-semibold text-white bg-purple-600 hover:bg-purple-700 px-4 py-1.5 rounded-full transition-colors"
+                      >
+                        Track Shipment ↗
+                      </a>
+                    )}
+                  </div>
+
+                  {order.status === "SHIPPED" && (
+                    <form action={confirmOrderDelivered.bind(null, order._id)}>
+                      <button
+                        type="submit"
+                        className="text-xs font-semibold text-white bg-green-600 hover:bg-green-700 px-4 py-1.5 rounded-full transition-colors"
+                      >
+                        Order Received
+                      </button>
+                    </form>
+                  )}
                 </div>
               )}
             </div>
