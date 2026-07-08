@@ -1,6 +1,5 @@
 import { Resend } from "resend";
 
-const resend = new Resend(process.env.RESEND_API_KEY);
 const FROM = "onboarding@resend.dev";
 
 export async function sendShippedEmail({
@@ -14,6 +13,8 @@ export async function sendShippedEmail({
   trackingNumber?: string | null;
   trackingUrl?: string | null;
 }) {
+  if (!process.env.RESEND_API_KEY) return;
+  const resend = new Resend(process.env.RESEND_API_KEY);
   await resend.emails.send({
     from: FROM,
     to,
@@ -39,6 +40,8 @@ export async function sendOrderCompleteEmail({
   orderNumber: string;
   customerName?: string | null;
 }) {
+  if (!process.env.RESEND_API_KEY) return;
+  const resend = new Resend(process.env.RESEND_API_KEY);
   await resend.emails.send({
     from: FROM,
     to,
