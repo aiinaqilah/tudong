@@ -10,7 +10,7 @@ import Link from 'next/link';
 import React, { useEffect, useMemo, useState } from 'react';
 import { useShallow } from 'zustand/shallow';
 
-const freeShippingAmount = 15;
+const freeShippingAmount = 150;
 
 const CartItem = ({ item }: { item: CartItemType }) => {
     const { removeItem, updateQuantity } = useCartStore(
