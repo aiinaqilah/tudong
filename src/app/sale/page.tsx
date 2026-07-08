@@ -2,7 +2,7 @@ import { getSaleProducts, getActiveCampaigns } from "@/sanity/lib/client";
 import { getUserFavorites } from "@/actions/favorite-actions";
 import { computeCampaignMap } from "@/lib/utils";
 import ProductGrid from "@/components/product/ProductGrid";
-import SalesCampaignBanner from "@/components/layout/SalesCampaignBanner";
+// import SalesCampaignBanner from "@/components/layout/SalesCampaignBanner";
 
 export default async function SalePage() {
     const [products, campaigns, favorites] = await Promise.all([
@@ -16,7 +16,7 @@ export default async function SalePage() {
 
     return (
         <div>
-            <SalesCampaignBanner />
+            {/* <SalesCampaignBanner /> */}
 
             {/* Sale header */}
             <div className="bg-gradient-to-r from-red-600 to-orange-500 py-10 text-center">

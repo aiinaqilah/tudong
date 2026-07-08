@@ -1,4 +1,4 @@
-import SalesCampaignBanner from '@/components/layout/SalesCampaignBanner';
+// import SalesCampaignBanner from '@/components/layout/SalesCampaignBanner';
 import { getProductById, getActiveCampaigns, getRecommendedProducts } from '@/sanity/lib/client';
 import { getUserFavorites } from '@/actions/favorite-actions';
 import { computeCampaignMap } from '@/lib/utils';
@@ -27,7 +27,7 @@ const ProductPage = async ({ params }: { params: Promise<{ id: string }> }) => {
 
     return (
         <div className='bg-gray-50'>
-            <SalesCampaignBanner />
+            {/* <SalesCampaignBanner /> */}
 
             {/* Breadcrumb Navigation */}
             <div className='bg-white border-b border-gray-200'>

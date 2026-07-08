@@ -2,6 +2,8 @@
 
 import { getCurrentSession } from "@/actions/auth";
 import { client } from "@/sanity/lib/client";
+import prisma from "@/lib/db";
+import { sendShippedEmail, sendOrderCompleteEmail } from "@/lib/email";
 
 export type SanityOrderItem = {
   _key: string;
@@ -155,6 +157,31 @@ export async function updateOrderStatus(orderId: string, formData: FormData): Pr
   });
 
   await writeClient.patch(orderId).set({ status }).commit();
+
+  if (status === "SHIPPED") {
+    try {
+      const order = await client.fetch<{
+        orderNumber: string;
+        customerEmail: string | null;
+        trackingNumber: string | null;
+        trackingUrl: string | null;
+      }>(
+        `*[_type == "order" && _id == $orderId][0]{ orderNumber, customerEmail, trackingNumber, trackingUrl }`,
+        { orderId },
+        { cache: "no-store" }
+      );
+      if (order?.customerEmail) {
+        await sendShippedEmail({
+          to: order.customerEmail,
+          orderNumber: order.orderNumber,
+          trackingNumber: order.trackingNumber,
+          trackingUrl: order.trackingUrl,
+        });
+      }
+    } catch {
+      // email failure should not break the status update
+    }
+  }
 }
 
 export async function confirmOrderDelivered(orderId: string): Promise<void> {
@@ -181,6 +208,42 @@ export async function confirmOrderDelivered(orderId: string): Promise<void> {
   });
 
   await writeClient.patch(orderId).set({ status: "DELIVERED" }).commit();
+
+  try {
+    const order = await client.fetch<{
+      orderNumber: string;
+      customerName: string | null;
+      sellerIds: (string | null)[];
+    }>(
+      `*[_type == "order" && _id == $orderId][0]{
+        orderNumber,
+        customerName,
+        "sellerIds": orderItems[].product->sellerId
+      }`,
+      { orderId },
+      { cache: "no-store" }
+    );
+
+    const uniqueSellerIds = [...new Set((order?.sellerIds ?? []).filter(Boolean))] as string[];
+
+    if (uniqueSellerIds.length) {
+      const sellers = await prisma.user.findMany({
+        where: { id: { in: uniqueSellerIds } },
+        select: { email: true },
+      });
+      await Promise.all(
+        sellers.map((seller) =>
+          sendOrderCompleteEmail({
+            to: seller.email,
+            orderNumber: order.orderNumber,
+            customerName: order.customerName,
+          })
+        )
+      );
+    }
+  } catch {
+    // email failure should not break the delivery confirmation
+  }
 }
 
 export async function updateTrackingInfo(orderId: string, formData: FormData): Promise<void> {

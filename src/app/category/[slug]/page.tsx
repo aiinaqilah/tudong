@@ -1,4 +1,4 @@
-import SalesCampaignBanner from '@/components/layout/SalesCampaignBanner';
+// import SalesCampaignBanner from '@/components/layout/SalesCampaignBanner';
 import ProductGrid from '@/components/product/ProductGrid';
 import { getCategoryBySlug, getProductsByCategorySlug, getActiveCampaigns } from '@/sanity/lib/client';
 import { getUserFavorites } from '@/actions/favorite-actions';
@@ -29,7 +29,7 @@ const CategoryPage = async ({ params }: CategoryPageProps) => {
 
     return (
         <div>
-            <SalesCampaignBanner />
+            {/* <SalesCampaignBanner /> */}
 
             <div className='bg-red-50 p-4'>
                 <div className='container mx-auto'>

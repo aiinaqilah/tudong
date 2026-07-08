@@ -108,6 +108,13 @@ export type SizeReference = {
   [internalGroqTypeReferenceTo]?: "size";
 };
 
+export type CollectionReference = {
+  _ref: string;
+  _type: "reference";
+  _weak?: boolean;
+  [internalGroqTypeReferenceTo]?: "collection";
+};
+
 export type Product = {
   _id: string;
   _type: "product";
@@ -129,6 +136,7 @@ export type Product = {
   category?: ProductCategoryReference;
   brand?: BrandReference;
   material?: MaterialReference;
+  collection?: CollectionReference;
   color?: Array<{
     name?: string;
     hex?: string;
@@ -139,7 +147,10 @@ export type Product = {
       _key: string;
     } & SizeReference
   >;
+  stock?: number;
   inStock?: boolean;
+  discount?: number;
+  sellerId?: string;
 };
 
 export type Material = {

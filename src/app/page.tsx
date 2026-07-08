@@ -1,4 +1,4 @@
-import SalesCampaignBanner from "@/components/layout/SalesCampaignBanner";
+// import SalesCampaignBanner from "@/components/layout/SalesCampaignBanner";
 import { getAllProducts, getActiveCampaigns } from "@/sanity/lib/client";
 import ProductGrid from "@/components/product/ProductGrid";
 import { getUserFavorites } from "@/actions/favorite-actions";
@@ -16,7 +16,7 @@ const Home = async () => {
 
     return (
         <div>
-            <SalesCampaignBanner />
+            {/* <SalesCampaignBanner /> */}
 
             <section className='container mx-auto py-8'>
                 <ProductGrid products={products} favoriteIds={favoriteIds} campaignMap={campaignMap} />

@@ -21,13 +21,20 @@ export type ActiveCampaign = {
 };
 
 export function computeCampaignMap(
-  products: { _id: string; price?: number | null }[],
+  products: { _id: string; price?: number | null; discount?: number | null }[],
   campaigns: ActiveCampaign[]
 ): Map<string, number> {
   const map = new Map<string, number>();
   for (const product of products) {
     const originalPrice = product.price ?? 0;
     let bestPrice = originalPrice;
+
+    // Seller-assigned percentage discount
+    if (product.discount && product.discount > 0) {
+      bestPrice = Math.min(bestPrice, Math.max(0, originalPrice * (1 - product.discount / 100)));
+    }
+
+    // Admin promotion campaigns
     for (const campaign of campaigns) {
       if (campaign.productRefs?.includes(product._id)) {
         const discounted = campaign.discountType === 'percentage'
@@ -36,6 +43,7 @@ export function computeCampaignMap(
         if (discounted < bestPrice) bestPrice = Math.max(0, discounted);
       }
     }
+
     if (bestPrice < originalPrice) {
       map.set(product._id, bestPrice);
     }

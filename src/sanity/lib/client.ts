@@ -83,7 +83,10 @@ export const getActiveCampaigns = async () => {
 }
 
 export const getSaleProducts = async () => {
-  const query = `*[_type == "product" && _id in *[_type == "promotionCampaign" && isActive == true && startDate <= now() && endDate >= now()].products[]._ref]{
+  const query = `*[_type == "product" && (
+    _id in *[_type == "promotionCampaign" && isActive == true && startDate <= now() && endDate >= now()].products[]._ref
+    || (discount != null && discount > 0)
+  )]{
     ...,
     image[]{
       _key,
