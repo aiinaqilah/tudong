@@ -2,6 +2,7 @@ import { getUserFavorites } from "@/actions/favorite-actions";
 import { removeFavoriteAction } from "@/actions/favorite-actions";
 import { getProductsByIds } from "@/sanity/lib/client";
 import { urlFor } from "@/sanity/lib/image";
+import { isNewProduct } from "@/lib/utils";
 import Image from "next/image";
 import Link from "next/link";
 
@@ -50,6 +51,7 @@ export default async function UserFavouritesPage() {
               Array.isArray(product.image) && product.image[0]?.asset
                 ? product.image[0]
                 : null;
+            const isNew = isNewProduct(product._createdAt);
 
             return (
               <div
@@ -70,9 +72,11 @@ export default async function UserFavouritesPage() {
                       🛍️
                     </div>
                   )}
-                  <span className="absolute top-2 right-2 bg-red-500 text-white text-[10px] font-bold px-1.5 py-0.5 rounded-full animate-bounce">
-                    HOT!
-                  </span>
+                  {isNew && (
+                    <span className="absolute top-2 right-2 bg-emerald-500 text-white text-[10px] font-bold px-1.5 py-0.5 rounded-full">
+                      NEW
+                    </span>
+                  )}
                 </div>
 
                 {/* Info */}

@@ -1,6 +1,6 @@
 import { Product } from '@/sanity.types';
 import { urlFor } from '@/sanity/lib/image';
-import { formatPrice } from '@/lib/utils';
+import { formatPrice, isNewProduct } from '@/lib/utils';
 import Image from 'next/image';
 import Link from 'next/link';
 import React from 'react'
@@ -19,18 +19,20 @@ const ProductItem = ({ product, isFavorited = false, effectivePrice }: ProductIt
   const discountPct = isOnSale
     ? Math.round((1 - effectivePrice / originalPrice) * 100)
     : 0;
+  const isNew = isNewProduct(product._createdAt);
 
   return (
     <div className='bg-white rounded-lg overflow-hidden relative'>
-        {/* Badge: sale % or HOT! */}
-        <div className='absolute top-2 right-2 z-10'>
-            {isOnSale ? (
+        {/* Badges: sale % and/or NEW stacked */}
+        <div className='absolute top-2 right-2 z-10 flex flex-col items-end gap-1'>
+            {isOnSale && (
                 <span className='bg-red-500 text-white text-xs font-bold px-2 py-1 rounded-full'>
                     -{discountPct}%
                 </span>
-            ) : (
-                <span className='bg-red-500 text-white text-xs font-bold px-2 py-1 rounded-full animate-bounce'>
-                    HOT!
+            )}
+            {isNew && (
+                <span className='bg-emerald-500 text-white text-xs font-bold px-2 py-1 rounded-full'>
+                    NEW
                 </span>
             )}
         </div>
