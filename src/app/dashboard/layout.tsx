@@ -12,6 +12,7 @@ const userLinks = [
 
 const sellerLinks = [
   { href: "/dashboard/seller", label: "Overview" },
+  { href: "/dashboard/seller/analytics", label: "Analytics" },
   { href: "/dashboard/seller/products", label: "My Products" },
   { href: "/dashboard/seller/collections", label: "Collections" },
   { href: "/dashboard/seller/orders", label: "Orders" },
@@ -19,6 +20,7 @@ const sellerLinks = [
 
 const adminLinks = [
   { href: "/dashboard/admin", label: "Overview" },
+  { href: "/dashboard/admin/analytics", label: "Analytics" },
   { href: "/dashboard/admin/users", label: "Users" },
   { href: "/dashboard/admin/orders", label: "All Orders" },
   { href: "/dashboard/admin/applications", label: "Applications" },
