@@ -12,6 +12,14 @@ export const formatPrice = (price: number) => {
     }).format(price);
 }
 
+const NEW_PRODUCT_WINDOW_MS = 14 * 24 * 60 * 60 * 1000; // 14 days
+
+/** True when a product was created within the last 14 days (based on Sanity's _createdAt). */
+export function isNewProduct(createdAt?: string | null): boolean {
+    if (!createdAt) return false;
+    return Date.now() - new Date(createdAt).getTime() < NEW_PRODUCT_WINDOW_MS;
+}
+
 export type ActiveCampaign = {
   _id: string;
   title: string;
