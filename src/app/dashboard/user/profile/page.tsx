@@ -53,20 +53,6 @@ export default async function UserProfilePage() {
               </span>
             }
           />
-          <ProfileRow
-            label="Email Verified"
-            value={
-              user?.emailVerified ? (
-                <span className="inline-block px-2.5 py-0.5 rounded-full text-xs font-semibold bg-green-100 text-green-700">
-                  Verified ✓
-                </span>
-              ) : (
-                <span className="inline-block px-2.5 py-0.5 rounded-full text-xs font-semibold bg-yellow-100 text-yellow-700">
-                  Not Verified
-                </span>
-              )
-            }
-          />
           {joinedDate && <ProfileRow label="Member Since" value={joinedDate} />}
         </div>
       </div>

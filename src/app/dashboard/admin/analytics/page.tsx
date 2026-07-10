@@ -13,7 +13,6 @@ export default async function AdminAnalyticsPage() {
     <div>
       <div className="mb-6">
         <h1 className="text-2xl font-bold">Analytics</h1>
-        <p className="mt-0.5 text-sm text-gray-500">Marketplace-wide performance</p>
       </div>
 
       <div className="mb-6 grid grid-cols-2 gap-4 lg:grid-cols-4">
