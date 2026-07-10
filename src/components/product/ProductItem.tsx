@@ -5,6 +5,7 @@ import Image from 'next/image';
 import Link from 'next/link';
 import React from 'react'
 import FavoriteButton from '@/components/product/FavoriteButton';
+import QuickAddButton from '@/components/product/QuickAddButton';
 
 type ProductItemProps = {
     product: Product;
@@ -22,52 +23,53 @@ const ProductItem = ({ product, isFavorited = false, effectivePrice }: ProductIt
   const isNew = isNewProduct(product._createdAt);
 
   return (
-    <div className='bg-white rounded-lg overflow-hidden relative'>
+    <div className='group bg-card border border-border rounded-md overflow-hidden relative transition-shadow duration-300 hover:shadow-[0_8px_30px_-12px_rgba(43,36,34,0.18)]'>
         {/* Badges: sale % and/or NEW stacked */}
-        <div className='absolute top-2 right-2 z-10 flex flex-col items-end gap-1'>
+        <div className='absolute top-3 right-3 z-10 flex flex-col items-end gap-1.5'>
             {isOnSale && (
-                <span className='bg-red-500 text-white text-xs font-bold px-2 py-1 rounded-full'>
+                <span className='bg-foreground text-background text-[10px] font-medium uppercase tracking-[0.12em] px-2.5 py-1 rounded-full'>
                     -{discountPct}%
                 </span>
             )}
             {isNew && (
-                <span className='bg-emerald-500 text-white text-xs font-bold px-2 py-1 rounded-full'>
-                    NEW
+                <span className='bg-background/90 text-foreground border border-border text-[10px] font-medium uppercase tracking-[0.15em] px-2.5 py-1 rounded-full backdrop-blur-sm'>
+                    New
                 </span>
             )}
         </div>
 
-        {/* Favourite button */}
-        <div className='absolute top-2 left-2 z-10'>
+        {/* Favourite + quick add-to-cart */}
+        <div className='absolute top-3 left-3 z-10 flex items-center gap-1.5'>
             <FavoriteButton productId={product._id} isFavorited={isFavorited} size="sm" />
+            <QuickAddButton product={product} effectivePrice={effectivePrice} />
         </div>
 
-        <div className='relative h-48 w-full'>
+        <div className='relative h-52 w-full overflow-hidden bg-secondary/40'>
             {product.image && product.image[0]?.asset && (
                 <Image
                     src={urlFor(product.image[0]).width(256).url()}
                     alt={product.title || 'Product Image'}
                     fill
-                    className='object-contain p-2'
+                    className='object-contain p-3 transition-transform duration-500 ease-out group-hover:scale-[1.04]'
                     loading='lazy'
                 />
             )}
         </div>
 
         <div className='p-4'>
-            <h3 className='text-sm font-medium line-clamp-2 h-10 mb-2'>{product.title}</h3>
-            <div className='flex flex-col gap-2'>
-                <div className='flex items-center gap-2'>
-                    <span className='text-lg font-bold text-red-500'>{formatPrice(displayPrice)}</span>
+            <h3 className='text-sm text-foreground line-clamp-2 h-10 mb-2 leading-snug'>{product.title}</h3>
+            <div className='flex flex-col gap-3'>
+                <div className='flex items-baseline gap-2'>
+                    <span className='text-base font-medium text-foreground'>{formatPrice(displayPrice)}</span>
                     {isOnSale && (
-                        <span className='text-sm text-gray-400 line-through'>{formatPrice(originalPrice)}</span>
+                        <span className='text-sm text-muted-foreground line-through'>{formatPrice(originalPrice)}</span>
                     )}
                 </div>
                 <Link
                     href={`/product/${product._id}`}
-                    className='w-full text-center bg-gradient-to-r from-red-500 to-orange-500 text-white py-2 rounded-full text-sm font-bold hover:brightness-110 transition-all'
+                    className='w-full text-center border border-foreground/80 text-foreground py-2.5 rounded-full text-[11px] font-medium uppercase tracking-[0.18em] transition-colors duration-300 hover:bg-foreground hover:text-background'
                 >
-                    GRAB IT NOW!
+                    View Details
                 </Link>
             </div>
         </div>

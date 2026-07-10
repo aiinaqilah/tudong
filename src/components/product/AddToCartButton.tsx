@@ -18,9 +18,8 @@ const AddToCartButton = ({ product, effectivePrice }: AddToCartButtonProps) => {
     const { data: session } = authClient.useSession();
     const role = (session?.user as { role?: string })?.role ?? "user";
 
-    const { cartId, addItem, open } = useCartStore(
+    const { addItem, open } = useCartStore(
         useShallow((state) => ({
-            cartId: state.cartId,
             addItem: state.addItem,
             open: state.open,
         }))
@@ -29,7 +28,8 @@ const AddToCartButton = ({ product, effectivePrice }: AddToCartButtonProps) => {
     const [isLoading, setLoading] = useState(false);
 
     if (!product.price) return null;
-    if (role === "admin" || role === "seller") return null;
+    // Sellers are not buyers — hide the purchase control from seller accounts (UI-only).
+    if (role === "seller") return null;
 
     const priceToCharge = effectivePrice ?? product.price;
 
@@ -58,15 +58,15 @@ const AddToCartButton = ({ product, effectivePrice }: AddToCartButtonProps) => {
             onClick={handleAddToCart}
             disabled={isLoading}
             className={`
-                w-full mt-6 bg-gradient-to-r from-red-500 to-red-600
-                text-white py-4 rounded-full font-bold text-xl
-                hover:from-red-600 hover:to-red-700
+                w-full mt-6 bg-foreground
+                text-background py-4 rounded-full font-bold text-xl
+                hover:bg-foreground/90
                 transition-all transform
                 hover:scale-[1.02] active:scale-[1.02]
                 shadow-xl flex items-center justify-center gap-3
                 disabled:opacity-80 disabled:cursor-not-allowed
                 disabled:hover:scale-100 disabled:active:scale-100
-                disabled:hover:from-red-500 disabled:hover:to-red-600
+                disabled:hover:bg-foreground
             `}
         >
             {isLoading ? (

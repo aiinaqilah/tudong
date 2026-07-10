@@ -50,7 +50,7 @@ export default async function DashboardLayout({
   return (
     <div className="min-h-screen flex flex-col md:flex-row bg-gray-50">
       {/* Sidebar / top bar */}
-      <aside className="w-full md:w-60 md:shrink-0 bg-gray-900 flex flex-col md:min-h-screen">
+      <aside className="w-full md:w-60 md:shrink-0 bg-black flex flex-col md:min-h-screen">
         {/* Brand bar */}
         <div className="bg-black px-4 py-3 text-center">
           <Link href="/" className="text-white text-sm font-bold tracking-widest uppercase">

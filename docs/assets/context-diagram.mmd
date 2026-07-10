@@ -1,0 +1,22 @@
+flowchart LR
+    Customer([Customer])
+    Seller([Seller])
+    Admin([Admin])
+    Stripe([Stripe Payment Gateway])
+    Email([Resend Email Service])
+
+    System(("Hijab Catalogue<br/>Web Application"))
+
+    Customer -->|"Login, search, cart & payment details"| System
+    System -->|"Product listings, recommendations, order status"| Customer
+
+    Seller -->|"Seller application, product details, order & tracking updates"| System
+    System -->|"Received orders, sales analytics"| Seller
+
+    Admin -->|"Approval decisions, user & promo management"| System
+    System -->|"Applications, users, orders, analytics"| Admin
+
+    System -->|"Payment request"| Stripe
+    Stripe -->|"Payment confirmation (webhook)"| System
+
+    System -->|"Order & shipping notifications"| Email

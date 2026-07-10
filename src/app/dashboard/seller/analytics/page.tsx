@@ -13,11 +13,10 @@ export default async function SellerAnalyticsPage() {
     <div>
       <div className="mb-6">
         <h1 className="text-2xl font-bold">Analytics</h1>
-        <p className="mt-0.5 text-sm text-gray-500">Your store performance at a glance</p>
       </div>
 
       <div className="mb-6 grid grid-cols-2 gap-4 lg:grid-cols-4">
-        <KpiCard label="Revenue" value={formatPrice(a.totalRevenue)} deltaPct={a.revenueDeltaPct} />
+        <KpiCard label="Revenue" value={formatPrice(a.totalRevenue)} />
         <KpiCard label="Orders" value={String(a.totalOrders)} />
         <KpiCard label="Avg. Order Value" value={formatPrice(a.avgOrderValue)} />
         <KpiCard label="Units Sold" value={String(a.unitsSold)} />
@@ -30,7 +29,7 @@ export default async function SellerAnalyticsPage() {
       </div>
 
       <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
-        <ChartCard title="Top Products" subtitle="By revenue">
+        <ChartCard title="Top Selling Products">
           <TopProductsChart data={a.topProducts} />
         </ChartCard>
         <ChartCard title="Orders by Status">

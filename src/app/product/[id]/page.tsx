@@ -22,48 +22,28 @@ const ProductPage = async ({ params }: { params: Promise<{ id: string }> }) => {
     const effectivePrice = campaignMap.get(id);
 
     if (!product?.price) {
-        return <div className="container mx-auto py-8 text-center">Product not found</div>;
+        return <div className="container mx-auto py-8 text-center text-foreground">Product not found</div>;
     }
 
     return (
-        <div className='bg-gray-50'>
+        <div className='bg-background'>
             {/* <SalesCampaignBanner /> */}
 
             {/* Breadcrumb Navigation */}
-            <div className='bg-white border-b border-gray-200'>
+            <div className='bg-card border-b border-border'>
                 <div className='container mx-auto py-3 px-4'>
                     <div className='flex items-center gap-2 text-sm'>
                         <Link
                             href='/'
-                            className='text-gray-600 hover:text-red-600 transition-colors flex items-center gap-1'
+                            className='text-muted-foreground hover:text-foreground transition-colors flex items-center gap-1'
                         >
                             <Home className='w-4 h-4' />
                             <span>Home</span>
                         </Link>
-                        <ChevronRight className='w-4 h-4 text-gray-400' />
-                        <span className='text-gray-400 truncate'>
+                        <ChevronRight className='w-4 h-4 text-muted-foreground' />
+                        <span className='text-muted-foreground truncate'>
                             {product.title}
                         </span>
-                    </div>
-                </div>
-            </div>
-
-            {/* Guarantee Items */}
-            <div className='bg-gradient-to-r from-yellow-500/10 to-yellow-600/10 py-4'>
-                <div className='container mx-auto'>
-                    <div className='flex flex-wrap items-center justify-center gap-6 text-sm'>
-                        <div className='flex items-center gap-2'>
-                            <span className='text-yellow-600 text-xl'>🚚</span>
-                            <span className='font-medium'>Express Shipping</span>
-                        </div>
-                        <div className='flex items-center gap-2'>
-                            <span className='text-yellow-600 text-xl'>✨</span>
-                            <span className='font-medium'>Satisfaction Guaranteed</span>
-                        </div>
-                        <div className='flex items-center gap-2'>
-                            <span className='text-yellow-600 text-xl'>🔒</span>
-                            <span className='font-medium'>Secure Checkout</span>
-                        </div>
                     </div>
                 </div>
             </div>

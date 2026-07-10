@@ -60,11 +60,11 @@ export default function FavoriteButton({
         }
         ${favorited
           ? isLg
-            ? "bg-red-50 border-red-300 text-red-500 hover:bg-red-100"
-            : "bg-red-500 text-white hover:bg-red-600"
+            ? "bg-accent border-border text-destructive hover:bg-secondary"
+            : "bg-card text-destructive hover:text-destructive"
           : isLg
-          ? "bg-white border-gray-200 text-gray-500 hover:border-red-300 hover:text-red-500"
-          : "bg-white text-gray-400 hover:text-red-500"
+          ? "bg-card border-border text-muted-foreground hover:border-foreground hover:text-foreground"
+          : "bg-card text-muted-foreground hover:text-destructive"
         }
         ${isPending ? "opacity-60 cursor-not-allowed" : ""}
       `}

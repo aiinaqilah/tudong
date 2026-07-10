@@ -147,6 +147,23 @@ export const getRecommendedProducts = async (
   return scored.slice(0, limit).map((entry) => entry.candidate);
 };
 
+// --- Storefront filter options ---
+
+export type FilterOption = { _id: string; name: string };
+
+export const getFilterOptions = async (): Promise<{
+  brands: FilterOption[];
+  materials: FilterOption[];
+  sizes: FilterOption[];
+}> => {
+  const [brands, materials, sizes] = await Promise.all([
+    client.fetch<FilterOption[]>(`*[_type == "brand"]{ _id, name } | order(name asc)`, {}, { next: { revalidate: REVALIDATE_REFERENCE } }),
+    client.fetch<FilterOption[]>(`*[_type == "material"]{ _id, name } | order(name asc)`, {}, { next: { revalidate: REVALIDATE_REFERENCE } }),
+    client.fetch<FilterOption[]>(`*[_type == "size"]{ _id, name } | order(name asc)`, {}, { next: { revalidate: REVALIDATE_REFERENCE } }),
+  ]);
+  return { brands, materials, sizes };
+};
+
 // --- Product form reference options ---
 
 export type ProductFormOption = { _id: string; name: string };

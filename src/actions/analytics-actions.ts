@@ -28,7 +28,6 @@ export type DashboardAnalytics = {
   totalOrders: number;
   avgOrderValue: number;
   unitsSold: number;
-  revenueDeltaPct: number | null;
   revenueByDay: DayPoint[];
   topProducts: ProductStat[];
   statusBreakdown: StatusStat[];
@@ -98,11 +97,6 @@ function computeAnalytics(orders: RawOrder[], sellerId?: string): DashboardAnaly
     }
   }
 
-  // Week-over-week delta within the window (last 7 days vs the 7 before).
-  const prev7 = byDay.slice(0, 7).reduce((s, d) => s + d.revenue, 0);
-  const last7 = byDay.slice(7).reduce((s, d) => s + d.revenue, 0);
-  const revenueDeltaPct = prev7 > 0 ? ((last7 - prev7) / prev7) * 100 : null;
-
   // Top products by revenue.
   const productMap = new Map<string, ProductStat>();
   for (const o of active) {
@@ -137,7 +131,6 @@ function computeAnalytics(orders: RawOrder[], sellerId?: string): DashboardAnaly
     totalOrders,
     avgOrderValue,
     unitsSold,
-    revenueDeltaPct,
     revenueByDay: byDay,
     topProducts,
     statusBreakdown,

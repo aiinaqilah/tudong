@@ -18,7 +18,7 @@ export default function DashboardNav({ links }: { links: NavLink[] }) {
             href={link.href}
             className={`rounded-md px-3 py-2 md:py-2.5 text-sm font-medium whitespace-nowrap transition-colors ${
               isActive
-                ? "bg-red-500 text-white"
+                ? "bg-pink-200 text-gray-900"
                 : "text-gray-300 hover:bg-white/10 hover:text-white"
             }`}
           >

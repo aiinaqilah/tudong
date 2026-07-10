@@ -1,0 +1,29 @@
+flowchart TB
+    subgraph Client["Client Tier — Browser"]
+        UI["Next.js + React UI<br/>(Server & Client Components)"]
+        Z["Zustand cart state"]
+    end
+
+    subgraph App["Application Tier — Vercel"]
+        Next["Next.js Server<br/>(Server Actions / API Routes)"]
+        Auth["Better Auth<br/>RBAC: user / seller / admin"]
+    end
+
+    subgraph DataTier["Data Tier"]
+        PG[("PostgreSQL — Neon (Prisma ORM)<br/>users, sessions, cart, favourites, applications")]
+        Sanity[("Sanity CMS<br/>products, orders, categories, collections, promotions")]
+    end
+
+    subgraph Ext["External Services"]
+        Stripe["Stripe<br/>Checkout + Webhook"]
+        Resend["Resend<br/>Transactional Email"]
+    end
+
+    Z -.-> UI
+    UI <-->|"HTTPS"| Next
+    Next <--> Auth
+    Auth --> PG
+    Next <-->|"Prisma queries"| PG
+    Next <-->|"GROQ / CDN"| Sanity
+    Next <-->|"Payments"| Stripe
+    Next -->|"Send emails"| Resend

@@ -72,7 +72,6 @@ export default function StatusDonut({ data }: { data: StatusStat[] }) {
       <ul className="w-full space-y-2 text-sm">
         {data.map((d) => {
           const meta = STATUS_META[d.status];
-          const pct = total ? Math.round((d.count / total) * 100) : 0;
           return (
             <li key={d.status} className="flex items-center gap-2.5">
               <span
@@ -82,7 +81,6 @@ export default function StatusDonut({ data }: { data: StatusStat[] }) {
               />
               <span className="text-gray-700">{meta?.label ?? d.status}</span>
               <span className="ml-auto tabular-nums text-gray-900">{d.count}</span>
-              <span className="w-9 text-right tabular-nums text-gray-400">{pct}%</span>
             </li>
           );
         })}

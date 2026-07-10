@@ -1,28 +1,30 @@
-// import SalesCampaignBanner from "@/components/layout/SalesCampaignBanner";
-import { getAllProducts, getActiveCampaigns } from "@/sanity/lib/client";
-import ProductGrid from "@/components/product/ProductGrid";
+import { getAllProducts, getActiveCampaigns, getFilterOptions } from "@/sanity/lib/client";
+import ProductFilter from "@/components/product/ProductFilter";
 import { getUserFavorites } from "@/actions/favorite-actions";
 import { computeCampaignMap } from "@/lib/utils";
 
 const Home = async () => {
-    const [products, campaigns, favorites] = await Promise.all([
+    const [products, campaigns, favorites, filterOptions] = await Promise.all([
         getAllProducts(),
         getActiveCampaigns(),
         getUserFavorites(),
+        getFilterOptions(),
     ]);
 
-    const favoriteIds = new Set(favorites.map((f) => f.productId));
     const campaignMap = computeCampaignMap(products, campaigns);
 
     return (
-        <div>
-            {/* <SalesCampaignBanner /> */}
-
-            <section className='container mx-auto py-8'>
-                <ProductGrid products={products} favoriteIds={favoriteIds} campaignMap={campaignMap} />
-            </section>
-        </div>
+        <section className="container mx-auto px-6 sm:px-8 py-10">
+            <ProductFilter
+                products={products}
+                brands={filterOptions.brands}
+                materials={filterOptions.materials}
+                sizes={filterOptions.sizes}
+                favoriteProductIds={favorites.map((f) => f.productId)}
+                campaign={Object.fromEntries(campaignMap)}
+            />
+        </section>
     );
-}
+};
 
 export default Home;
