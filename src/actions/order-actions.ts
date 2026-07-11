@@ -82,7 +82,10 @@ export async function getSellerOrders(): Promise<SanityOrder[]> {
   if (!user) return [];
 
   return client.fetch(
-    `*[_type == "order" && sellerId == $sellerId] | order(orderDate desc){
+    `*[_type == "order" && (
+      sellerId == $sellerId ||
+      (!defined(sellerId) && count(orderItems[product->sellerId == $sellerId]) > 0)
+    )] | order(orderDate desc){
       ${ORDER_FIELDS},
       "customer": { "email": customerEmail, "name": customerName }
     }`,
@@ -120,7 +123,10 @@ export async function getSellerOrderById(orderId: string): Promise<SanityOrderDe
   }
 
   return client.fetch(
-    `*[_type == "order" && _id == $orderId && sellerId == $sellerId][0]{ ${ORDER_DETAIL_FIELDS} }`,
+    `*[_type == "order" && _id == $orderId && (
+      sellerId == $sellerId ||
+      (!defined(sellerId) && count(orderItems[product->sellerId == $sellerId]) > 0)
+    )][0]{ ${ORDER_DETAIL_FIELDS} }`,
     { orderId, sellerId: user.id },
     { cache: "no-store" }
   );
@@ -138,7 +144,10 @@ export async function updateOrderStatus(orderId: string, formData: FormData): Pr
 
   if (role !== "admin") {
     const result = await client.fetch<{ count: number }>(
-      `{ "count": count(*[_type == "order" && _id == $orderId && sellerId == $sellerId]) }`,
+      `{ "count": count(*[_type == "order" && _id == $orderId && (
+        sellerId == $sellerId ||
+        (!defined(sellerId) && count(orderItems[product->sellerId == $sellerId]) > 0)
+      )]) }`,
       { orderId, sellerId: user.id },
       { cache: "no-store" }
     );
@@ -254,7 +263,10 @@ export async function getSellerPendingOrderCount(): Promise<number> {
   if (role !== "seller" && role !== "admin") return 0;
 
   const result = await client.fetch<{ count: number }>(
-    `{ "count": count(*[_type == "order" && status == "PROCESSING" && sellerId == $sellerId]) }`,
+    `{ "count": count(*[_type == "order" && status == "PROCESSING" && (
+      sellerId == $sellerId ||
+      (!defined(sellerId) && count(orderItems[product->sellerId == $sellerId]) > 0)
+    )]) }`,
     { sellerId: user.id },
     { cache: "no-store" }
   );
@@ -274,7 +286,10 @@ export async function updateTrackingInfo(orderId: string, formData: FormData): P
 
   if (role !== "admin") {
     const result = await client.fetch<{ count: number }>(
-      `{ "count": count(*[_type == "order" && _id == $orderId && sellerId == $sellerId]) }`,
+      `{ "count": count(*[_type == "order" && _id == $orderId && (
+        sellerId == $sellerId ||
+        (!defined(sellerId) && count(orderItems[product->sellerId == $sellerId]) > 0)
+      )]) }`,
       { orderId, sellerId: user.id },
       { cache: "no-store" }
     );
