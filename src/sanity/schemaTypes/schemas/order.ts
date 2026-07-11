@@ -41,6 +41,7 @@ export const order = defineType({
         defineField({ name: 'customerId', title: 'Customer ID', type: 'string' }),
         defineField({ name: 'customerName', title: 'Customer Name', type: 'string' }),
         defineField({ name: 'customerEmail', title: 'Customer Email', type: 'string' }),
+        defineField({ name: 'sellerId', title: 'Seller ID', type: 'string', description: 'The seller who owns this order' }),
         defineField({ name: 'stripeCustomerId', title: 'Stripe Customer ID', type: 'string' }),
         defineField({ name: 'stripeCheckoutSessionId', title: 'Stripe Checkout Session ID', type: 'string' }),
         defineField({ name: 'stripePaymentIntentId', title: 'Stripe Payment Intent ID', type: 'string' }),
