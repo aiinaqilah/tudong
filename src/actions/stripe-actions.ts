@@ -4,10 +4,17 @@ import Stripe from "stripe";
 import { getCurrentSession } from "@/actions/auth";
 import { getOrCreateCart } from "./cart-actions";
 import { validatePromoCode } from "./promo-actions";
+import { getShippingForProducts } from "./shipping-actions";
 
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
     apiVersion: "2026-05-27.dahlia",
 });
+
+const FREE_SHIPPING_THRESHOLD = 150;
+const DELIVERY_ESTIMATE = {
+    minimum: { unit: 'business_day' as const, value: 3 },
+    maximum: { unit: 'business_day' as const, value: 5 },
+};
 
 export const createCheckoutSession = async (cartId: string, promoCode?: string) => {
     const { user } = await getCurrentSession();
@@ -34,6 +41,28 @@ export const createCheckoutSession = async (cartId: string, promoCode?: string) 
         }
     }
 
+    // Calculate dynamic per-seller shipping, then combine into a single amount
+    const productIds = cart.items.map((item) => item.sanityProductId);
+    const sellerShipping = await getShippingForProducts(productIds);
+    const isFreeShipping = subtotal >= FREE_SHIPPING_THRESHOLD;
+    const totalShipping = isFreeShipping
+        ? 0
+        : sellerShipping.reduce((sum, s) => sum + s.shippingCost, 0);
+
+    const shippingOptions: Stripe.Checkout.SessionCreateParams.ShippingOption[] = [
+        {
+            shipping_rate_data: {
+                type: 'fixed_amount',
+                fixed_amount: {
+                    currency: 'myr',
+                    amount: Math.round(totalShipping * 100),
+                },
+                display_name: isFreeShipping ? 'Free Shipping' : 'Shipping',
+                delivery_estimate: DELIVERY_ESTIMATE,
+            },
+        },
+    ];
+
     const session = await stripe.checkout.sessions.create({
         mode: 'payment',
         line_items: cart.items.map((item) => ({
@@ -58,22 +87,7 @@ export const createCheckoutSession = async (cartId: string, promoCode?: string) 
         shipping_address_collection: {
             allowed_countries: ['MY', 'SG', 'BN']
         },
-        shipping_options: [
-            {
-                shipping_rate_data: {
-                    type: 'fixed_amount',
-                    fixed_amount: {
-                        currency: 'myr',
-                        amount: subtotal >= 150 ? 0 : 5 * 100
-                    },
-                    display_name: subtotal >= 150 ? 'Free Shipping' : 'Shipping',
-                    delivery_estimate: {
-                        minimum: { unit: 'business_day', value: 3 },
-                        maximum: { unit: 'business_day', value: 5 },
-                    }
-                }
-            }
-        ]
+        shipping_options: shippingOptions,
     });
 
     if (!session.url) {

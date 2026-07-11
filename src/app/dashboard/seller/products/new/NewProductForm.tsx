@@ -98,6 +98,14 @@ export default function NewProductForm({ options, sellerBrand }: { options: Opti
             <Field label="Price (RM)" name="price" type="number" step="0.01" min="0" required />
             <Field label="Stock" name="stock" type="number" min="0" defaultValue="0" required />
           </div>
+          <Field
+            label="Shipping Override (RM)"
+            name="shippingOverride"
+            type="number"
+            step="0.01"
+            min="0"
+            placeholder="Leave blank to use your default"
+          />
           <div className="flex items-center gap-3">
             <input
               type="checkbox"

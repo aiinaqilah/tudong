@@ -31,7 +31,7 @@ export async function updateUserRole(userId: string, formData: FormData): Promis
   if (role !== "admin") return;
 
   const newRole = formData.get("role") as string;
-  const validRoles = ["user", "seller", "admin"];
+  const validRoles = ["customer", "seller", "admin"];
   if (!validRoles.includes(newRole)) return;
 
   await prisma.user.update({

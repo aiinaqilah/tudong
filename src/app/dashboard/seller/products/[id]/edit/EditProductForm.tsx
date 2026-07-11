@@ -165,6 +165,15 @@ export default function EditProductForm({
             defaultValue={product.discount ?? ""}
             placeholder="Leave blank for no discount"
           />
+          <Field
+            label="Shipping Override (RM)"
+            name="shippingOverride"
+            type="number"
+            step="0.01"
+            min="0"
+            defaultValue={product.shippingOverride ?? ""}
+            placeholder="Leave blank to use your default"
+          />
           <div className="flex items-center gap-3">
             <input
               type="checkbox"

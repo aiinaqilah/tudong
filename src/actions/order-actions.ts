@@ -246,6 +246,22 @@ export async function confirmOrderDelivered(orderId: string): Promise<void> {
   }
 }
 
+export async function getSellerPendingOrderCount(): Promise<number> {
+  const { user } = await getCurrentSession();
+  if (!user) return 0;
+
+  const role = (user as { role?: string }).role;
+  if (role !== "seller" && role !== "admin") return 0;
+
+  const result = await client.fetch<{ count: number }>(
+    `{ "count": count(*[_type == "order" && status == "PROCESSING" && count(orderItems[product->sellerId == $sellerId]) > 0]) }`,
+    { sellerId: user.id },
+    { cache: "no-store" }
+  );
+
+  return result?.count ?? 0;
+}
+
 export async function updateTrackingInfo(orderId: string, formData: FormData): Promise<void> {
   const { user } = await getCurrentSession();
   if (!user) return;

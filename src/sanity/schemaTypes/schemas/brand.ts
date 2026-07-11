@@ -37,5 +37,19 @@ export const brand = defineType({
             type: "string",
             description: "BetterAuth user ID of the seller who owns this brand",
         }),
+        defineField({
+            name: "sellerName",
+            title: "Seller Name",
+            type: "string",
+            description: "Display name for this seller (shown to customers)",
+        }),
+        defineField({
+            name: "defaultShippingPrice",
+            title: "Default Shipping Price (RM)",
+            type: "number",
+            description: "Default shipping fee per order for this seller. Can be overridden per product.",
+            initialValue: 0,
+            validation: (Rule) => Rule.min(0),
+        }),
     ]
 })

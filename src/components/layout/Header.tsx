@@ -1,11 +1,12 @@
 "use client";
-import React, { useEffect } from "react";
+import React, { useEffect, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { authClient } from "@/lib/auth-client";
 import { ProductCategory } from "@/sanity.types";
 import HeaderSearchBar from '@/components/layout/HeaderSearchBar';
 import { useCartStore } from '@/stores/cart-store';
+import { getSellerPendingOrderCount } from '@/actions/order-actions';
 import { useShallow } from 'zustand/shallow';
 
 const AnnouncementBar = () => {
@@ -13,7 +14,7 @@ const AnnouncementBar = () => {
     <div className="w-full bg-foreground py-2.5">
       <div className="container mx-auto flex items-center justify-center px-8">
         <span className="text-center text-[10px] sm:text-[11px] font-light uppercase tracking-[0.28em] text-background/90">
-          Complimentary shipping over RM150 · Free returns
+          Shipping varies by seller · Free shipping over RM150 · Free returns
         </span>
       </div>
     </div>
@@ -79,6 +80,15 @@ const Header = ({ categorySelector, categories = [] }: HeaderProps) => {
   };
 
   const user = session?.user;
+  const isSeller = user && ((user as { role?: string }).role === "seller" || (user as { role?: string }).role === "admin");
+
+  const [pendingOrders, setPendingOrders] = useState(0);
+
+  useEffect(() => {
+    if (isSeller) {
+      getSellerPendingOrderCount().then(setPendingOrders).catch(() => {});
+    }
+  }, [isSeller]);
 
   //header
   return (
@@ -155,31 +165,59 @@ const Header = ({ categorySelector, categories = [] }: HeaderProps) => {
                 </React.Fragment>
               )}
 
-              <button
-                onClick={open}
-                aria-label="Open cart"
-                className="text-foreground/80 hover:text-foreground relative"
-              >
-                <svg
-                  xmlns="http://www.w3.org/2000/svg"
-                  className="h-5 w-5"
-                  fill="none"
-                  viewBox="0 0 24 24"
-                  stroke="currentColor"
-                  strokeWidth={1.5}
+              {isSeller ? (
+                <Link
+                  href="/dashboard/seller/orders"
+                  aria-label="Pending orders"
+                  className="text-foreground/80 hover:text-foreground relative"
                 >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z"
-                  />
-                </svg>
-                {getTotalItems() > 0 && (
-                  <span className="absolute -top-1.5 -right-1.5 bg-primary text-primary-foreground text-[10px] w-4 h-4 rounded-full flex items-center justify-center">
-                    {getTotalItems()}
-                  </span>
-                )}
-              </button>
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    className="h-5 w-5"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                    stroke="currentColor"
+                    strokeWidth={1.5}
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"
+                    />
+                  </svg>
+                  {pendingOrders > 0 && (
+                    <span className="absolute -top-1.5 -right-1.5 bg-red-500 text-white text-[10px] min-w-[16px] h-4 rounded-full flex items-center justify-center font-semibold">
+                      {pendingOrders}
+                    </span>
+                  )}
+                </Link>
+              ) : (
+                <button
+                  onClick={open}
+                  aria-label="Open cart"
+                  className="text-foreground/80 hover:text-foreground relative"
+                >
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    className="h-5 w-5"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                    stroke="currentColor"
+                    strokeWidth={1.5}
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z"
+                    />
+                  </svg>
+                  {getTotalItems() > 0 && (
+                    <span className="absolute -top-1.5 -right-1.5 bg-primary text-primary-foreground text-[10px] w-4 h-4 rounded-full flex items-center justify-center">
+                      {getTotalItems()}
+                    </span>
+                  )}
+                </button>
+              )}
             </div>
           </div>
         </div>

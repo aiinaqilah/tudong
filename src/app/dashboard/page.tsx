@@ -5,9 +5,9 @@ export default async function DashboardPage() {
   const { user } = await getCurrentSession();
   if (!user) redirect("/api/login");
 
-  const role = (user as { role?: string }).role ?? "user";
+  const role = (user as { role?: string }).role ?? "customer";
 
   if (role === "admin") redirect("/dashboard/admin");
   if (role === "seller") redirect("/dashboard/seller");
-  redirect("/dashboard/user");
+  redirect("/dashboard/customer");
 }

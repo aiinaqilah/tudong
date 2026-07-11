@@ -4,13 +4,13 @@ import { getUserFavorites } from "@/actions/favorite-actions";
 import { getMyApplication } from "@/actions/seller-application-actions";
 import Link from "next/link";
 
-export default async function UserDashboardPage() {
+export default async function CustomerDashboardPage() {
   const { user } = await getCurrentSession();
-  const role = (user as { role?: string } | null)?.role ?? "user";
+  const role = (user as { role?: string } | null)?.role ?? "customer";
   const [orders, favorites, application] = await Promise.all([
     getUserOrders(),
     getUserFavorites(),
-    role === "user" ? getMyApplication() : Promise.resolve(null),
+    role === "customer" ? getMyApplication() : Promise.resolve(null),
   ]);
 
   const processing = orders.filter((o) => o.status === "PROCESSING").length;
@@ -32,8 +32,8 @@ export default async function UserDashboardPage() {
         <p className="text-gray-300 text-sm mt-1">{user?.email}</p>
       </div>
 
-      {/* Seller application banner — only for regular users */}
-      {role === "user" && (
+      {/* Seller application banner — only for regular customers */}
+      {role === "customer" && (
         <div className={`mb-6 rounded-xl border px-5 py-4 flex items-center justify-between gap-4 ${
           application?.status === "PENDING"
             ? "bg-yellow-50 border-yellow-200"
@@ -63,7 +63,7 @@ export default async function UserDashboardPage() {
           </div>
           {(!application || application.status === "REJECTED") && (
             <Link
-              href="/dashboard/user/apply-seller"
+              href="/dashboard/customer/apply-seller"
               className="shrink-0 bg-black text-white text-xs font-semibold uppercase tracking-widest px-4 py-2 rounded-full hover:bg-gray-800 transition-colors"
             >
               {application?.status === "REJECTED" ? "Reapply" : "Apply Now"}
@@ -89,7 +89,7 @@ export default async function UserDashboardPage() {
           </p>
         </div>
         <Link
-          href="/dashboard/user/orders"
+          href="/dashboard/customer/orders"
           className="text-xs font-semibold uppercase tracking-widest text-red-500 hover:text-red-600 transition-colors"
         >
           View All Orders →
@@ -103,7 +103,7 @@ export default async function UserDashboardPage() {
             Recent Orders
           </h2>
           <Link
-            href="/dashboard/user/orders"
+            href="/dashboard/customer/orders"
             className="text-xs text-red-500 hover:text-red-600 font-medium transition-colors"
           >
             See all

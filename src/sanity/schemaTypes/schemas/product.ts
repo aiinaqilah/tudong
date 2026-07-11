@@ -120,5 +120,12 @@ export const product = defineType({
             type: 'string',
             description: 'User ID of the seller who owns this product',
         }),
+        defineField({
+            name: 'shippingOverride',
+            title: 'Shipping Override (RM)',
+            type: 'number',
+            description: 'Override the seller default shipping price for this product. Leave empty to use seller default.',
+            validation: (Rule) => Rule.min(0),
+        }),
     ],
 });

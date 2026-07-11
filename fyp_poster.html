@@ -1,0 +1,569 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>FYP Poster - Hijab Catalogue Web Application</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap');
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    font-family: 'Inter', sans-serif;
+    background: #e8ecf0;
+    display: flex;
+    justify-content: center;
+    padding: 20px;
+  }
+  .poster {
+    width: 1200px;
+    background: #fff;
+    box-shadow: 0 8px 40px rgba(0,0,0,0.12);
+    overflow: hidden;
+  }
+
+  /* ===== HEADER ===== */
+  .header {
+    background: linear-gradient(135deg, #1a2e4a 0%, #234270 50%, #2e5a8e 100%);
+    color: #fff;
+    padding: 32px 40px;
+    display: flex;
+    align-items: center;
+    gap: 30px;
+  }
+  .header .logo-area {
+    flex-shrink: 0;
+    width: 70px; height: 70px;
+    background: rgba(255,255,255,0.12);
+    border-radius: 14px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 30px;
+    border: 1px solid rgba(255,255,255,0.2);
+  }
+  .header-text { flex: 1; }
+  .header-text .uni { font-size: 11px; font-weight: 500; letter-spacing: 2.5px; text-transform: uppercase; opacity: 0.7; margin-bottom: 2px; }
+  .header-text .faculty { font-size: 10px; font-weight: 400; letter-spacing: 1.5px; text-transform: uppercase; opacity: 0.55; margin-bottom: 10px; }
+  .header-text h1 { font-size: 26px; font-weight: 800; line-height: 1.25; margin-bottom: 6px; }
+  .header-text .meta { font-size: 12px; opacity: 0.8; font-weight: 400; }
+  .header-text .meta strong { font-weight: 600; }
+  .header .year-tag {
+    position: absolute; top: 16px; right: 24px;
+    background: rgba(255,255,255,0.12);
+    border: 1px solid rgba(255,255,255,0.25);
+    border-radius: 6px;
+    padding: 6px 14px;
+    font-size: 12px; font-weight: 600;
+  }
+  .header { position: relative; }
+
+  /* ===== MAIN LAYOUT: sidebar + content ===== */
+  .main {
+    display: grid;
+    grid-template-columns: 280px 1fr;
+    min-height: 680px;
+  }
+
+  /* ===== LEFT SIDEBAR ===== */
+  .sidebar {
+    background: #f5f7fa;
+    border-right: 1px solid #e2e6ec;
+    padding: 28px 22px;
+  }
+  .sidebar .section-title {
+    font-size: 12px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 1.5px;
+    color: #1a2e4a;
+    margin-bottom: 10px;
+    padding-bottom: 5px;
+    border-bottom: 2px solid #2e5a8e;
+  }
+  .sidebar p, .sidebar li {
+    font-size: 11.5px;
+    line-height: 1.6;
+    color: #374151;
+  }
+  .sidebar ul { list-style: none; padding: 0; }
+  .sidebar ul li {
+    padding: 4px 0 4px 14px;
+    position: relative;
+    font-size: 11px;
+  }
+  .sidebar ul li::before {
+    content: '';
+    position: absolute; left: 0; top: 10px;
+    width: 5px; height: 5px;
+    background: #2e5a8e;
+    border-radius: 50%;
+  }
+  .sidebar .side-section { margin-bottom: 22px; }
+  .sidebar .side-section:last-child { margin-bottom: 0; }
+
+  .arch-diagram {
+    background: #fff;
+    border: 1px solid #dde2ea;
+    border-radius: 6px;
+    padding: 14px 10px;
+    margin-top: 8px;
+  }
+  .arch-row {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    margin-bottom: 5px;
+  }
+  .arch-row:last-child { margin-bottom: 0; }
+  .arch-box {
+    padding: 6px 10px;
+    border-radius: 5px;
+    font-size: 9.5px;
+    font-weight: 600;
+    text-align: center;
+    min-width: 90px;
+  }
+  .arch-box.c { background: #dbeafe; color: #1e40af; border: 1px solid #93c5fd; }
+  .arch-box.s { background: #dcfce7; color: #166534; border: 1px solid #86efac; }
+  .arch-box.d { background: #fef3c7; color: #92400e; border: 1px solid #fcd34d; }
+  .arch-box.e { background: #f3e8ff; color: #6b21a8; border: 1px solid #c084fc; }
+  .arch-arrow { font-size: 12px; color: #9ca3af; }
+
+  .scope-box {
+    background: #fff;
+    border: 1px solid #dde2ea;
+    border-radius: 6px;
+    padding: 10px 12px;
+    margin-top: 8px;
+  }
+  .scope-box p { font-size: 10.5px; line-height: 1.55; }
+
+  /* ===== RIGHT CONTENT ===== */
+  .content {
+    padding: 28px 32px;
+    display: flex;
+    flex-direction: column;
+    gap: 22px;
+  }
+  .section { }
+  .section-title {
+    font-size: 13px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 1.2px;
+    color: #1a2e4a;
+    margin-bottom: 8px;
+    padding-bottom: 5px;
+    border-bottom: 2px solid #2e5a8e;
+  }
+  .section p, .section li {
+    font-size: 12px;
+    line-height: 1.65;
+    color: #374151;
+  }
+  .section ul { list-style: none; padding: 0; }
+  .section ul li {
+    padding: 2px 0 2px 14px;
+    position: relative;
+  }
+  .section ul li::before {
+    content: '';
+    position: absolute; left: 0; top: 9px;
+    width: 5px; height: 5px;
+    background: #2e5a8e;
+    border-radius: 50%;
+  }
+
+  .obj-item {
+    display: flex;
+    align-items: flex-start;
+    margin-bottom: 5px;
+  }
+  .obj-num {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 18px; height: 18px;
+    background: #1a2e4a;
+    color: #fff;
+    border-radius: 50%;
+    font-size: 9px;
+    font-weight: 700;
+    margin-right: 7px;
+    flex-shrink: 0;
+    margin-top: 1px;
+  }
+  .obj-item p { flex: 1; }
+
+  .highlight-box {
+    background: #f0f5ff;
+    border-left: 3px solid #2e5a8e;
+    padding: 10px 12px;
+    border-radius: 0 5px 5px 0;
+    margin: 8px 0;
+  }
+  .highlight-box p { font-size: 11px; color: #1a2e4a; font-weight: 500; }
+
+  .method-steps {
+    display: flex;
+    gap: 6px;
+    align-items: center;
+    flex-wrap: wrap;
+    margin-top: 8px;
+  }
+  .method-step {
+    background: #1a2e4a;
+    color: #fff;
+    padding: 5px 12px;
+    border-radius: 4px;
+    font-size: 10px;
+    font-weight: 600;
+  }
+  .method-arrow { color: #9ca3af; font-size: 14px; }
+
+  /* ===== SCREENSHOTS ===== */
+  .screenshot-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+  }
+  .screenshot-placeholder {
+    background: #f1f5f9;
+    border: 2px dashed #cbd5e1;
+    border-radius: 8px;
+    padding: 30px 16px;
+    text-align: center;
+  }
+  .screenshot-placeholder .icon { font-size: 32px; margin-bottom: 6px; }
+  .screenshot-placeholder .label {
+    font-size: 11px;
+    font-weight: 600;
+    color: #64748b;
+  }
+  .screenshot-placeholder .hint {
+    font-size: 9.5px;
+    color: #94a3b8;
+    margin-top: 3px;
+  }
+
+  /* ===== VALIDATION TABLE ===== */
+  .val-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 8px;
+    font-size: 11px;
+  }
+  .val-table th {
+    background: #1a2e4a;
+    color: #fff;
+    padding: 7px 10px;
+    text-align: left;
+    font-weight: 600;
+    font-size: 10.5px;
+  }
+  .val-table td {
+    padding: 6px 10px;
+    border-bottom: 1px solid #e5e7eb;
+    color: #374151;
+    vertical-align: top;
+  }
+  .val-table tr:nth-child(even) td { background: #f9fafb; }
+  .badge-pass {
+    display: inline-block;
+    background: #dcfce7;
+    color: #166534;
+    padding: 2px 8px;
+    border-radius: 3px;
+    font-size: 10px;
+    font-weight: 600;
+  }
+
+  /* ===== REFERENCES ===== */
+  .ref-list { font-size: 10px; color: #6b7280; line-height: 1.7; }
+  .ref-list p { margin-bottom: 3px; }
+
+  /* ===== FOOTER ===== */
+  .footer {
+    background: #1a2e4a;
+    color: #fff;
+    padding: 12px 40px;
+    display: flex;
+    justify-content: space-between;
+    font-size: 10px;
+    opacity: 0.9;
+  }
+
+  @media print {
+    body { background: none; padding: 0; }
+    .poster { box-shadow: none; width: 100%; }
+  }
+</style>
+</head>
+<body>
+<div class="poster">
+
+  <!-- HEADER -->
+  <div class="header">
+    <div class="logo-area">&#128095;</div>
+    <div class="header-text">
+      <div class="uni">Universiti Malaysia Sabah</div>
+      <div class="faculty">Faculty of Computing and Informatics</div>
+      <h1>Hijab Catalogue Web Application with Colour Search Functionality</h1>
+      <div class="meta"><strong>Norain Aqilah Binti Shamsuddin</strong> &nbsp;|&nbsp; Bachelor of Computer Science (Data Science) &nbsp;|&nbsp; 2025</div>
+    </div>
+    <div class="year-tag">FYP 2025</div>
+  </div>
+
+  <!-- MAIN: SIDEBAR + CONTENT -->
+  <div class="main">
+
+    <!-- LEFT SIDEBAR: System Scope & Design -->
+    <div class="sidebar">
+
+      <div class="side-section">
+        <div class="section-title">System Scope</div>
+        <p>A centralized hijab e-catalogue platform for <strong>Malaysian, Singaporean, and Bruneian</strong> markets, operating in <strong>Malaysian Ringgit (MYR)</strong>.</p>
+        <ul style="margin-top: 8px;">
+          <li>Multi-brand product aggregation</li>
+          <li>Three user roles: User, Seller, Admin</li>
+          <li>Seller-managed product listings &amp; collections</li>
+          <li>Stripe payment (MY, SG, BN shipping)</li>
+          <li>Email notifications (Resend)</li>
+        </ul>
+      </div>
+
+      <div class="side-section">
+        <div class="section-title">Target Users</div>
+        <ul>
+          <li><strong>Customers:</strong> Browse, search, filter, purchase hijab</li>
+          <li><strong>Sellers:</strong> Manage products, orders, tracking</li>
+          <li><strong>Admins:</strong> User management, seller approvals, oversight</li>
+        </ul>
+      </div>
+
+      <div class="side-section">
+        <div class="section-title">System Architecture</div>
+        <div class="arch-diagram">
+          <div class="arch-row">
+            <div class="arch-box c">Browser (React 19)</div>
+          </div>
+          <div class="arch-row"><span class="arch-arrow">&darr; HTTP &uarr;</span></div>
+          <div class="arch-row">
+            <div class="arch-box s">Next.js 16 (SSR)</div>
+          </div>
+          <div class="arch-row"><span class="arch-arrow">&darr; &uarr;</span></div>
+          <div class="arch-row">
+            <div class="arch-box d">Neon PostgreSQL</div>
+            <div class="arch-box e">Sanity CMS</div>
+          </div>
+          <div class="arch-row">
+            <div class="arch-box e" style="min-width:80px">Stripe</div>
+            <div class="arch-box e" style="min-width:80px">Resend</div>
+          </div>
+        </div>
+        <p style="margin-top: 8px; font-size: 10px; color: #64748b;">
+          <strong>Dual-database:</strong> Products/orders in Sanity CMS; users/carts/favourites in PostgreSQL via Prisma ORM.
+        </p>
+      </div>
+
+      <div class="side-section">
+        <div class="section-title">Tech Stack</div>
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 4px;">
+          <div style="background:#fff; border:1px solid #dde2ea; border-radius:4px; padding:5px 8px; text-align:center;">
+            <div style="font-size:10px; font-weight:700; color:#1a2e4a;">Next.js 16</div>
+            <div style="font-size:8.5px; color:#6b7280;">Framework</div>
+          </div>
+          <div style="background:#fff; border:1px solid #dde2ea; border-radius:4px; padding:5px 8px; text-align:center;">
+            <div style="font-size:10px; font-weight:700; color:#1a2e4a;">Prisma 7</div>
+            <div style="font-size:8.5px; color:#6b7280;">ORM</div>
+          </div>
+          <div style="background:#fff; border:1px solid #dde2ea; border-radius:4px; padding:5px 8px; text-align:center;">
+            <div style="font-size:10px; font-weight:700; color:#1a2e4a;">Sanity v5</div>
+            <div style="font-size:8.5px; color:#6b7280;">CMS</div>
+          </div>
+          <div style="background:#fff; border:1px solid #dde2ea; border-radius:4px; padding:5px 8px; text-align:center;">
+            <div style="font-size:10px; font-weight:700; color:#1a2e4a;">Tailwind v4</div>
+            <div style="font-size:8.5px; color:#6b7280;">Styling</div>
+          </div>
+          <div style="background:#fff; border:1px solid #dde2ea; border-radius:4px; padding:5px 8px; text-align:center;">
+            <div style="font-size:10px; font-weight:700; color:#1a2e4a;">Better Auth</div>
+            <div style="font-size:8.5px; color:#6b7280;">Auth</div>
+          </div>
+          <div style="background:#fff; border:1px solid #dde2ea; border-radius:4px; padding:5px 8px; text-align:center;">
+            <div style="font-size:10px; font-weight:700; color:#1a2e4a;">Stripe</div>
+            <div style="font-size:8.5px; color:#6b7280;">Payments</div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- RIGHT CONTENT -->
+    <div class="content">
+
+      <!-- INTRODUCTION -->
+      <div class="section">
+        <div class="section-title">Introduction</div>
+        <p>
+          The growth of the modest fashion industry has led to an increase in online hijab shopping platforms. However, product data remains fragmented across different brand websites and online marketplaces, each using inconsistent formats and data structures. This project proposes a <strong>centralized hijab catalogue web application</strong> that aggregates product data from multiple brands into a unified platform, enabling users to browse, search, filter, and purchase hijab products across brands without barriers. The application features a <strong>colour-based search and recommendation system</strong> using HSL colour family matching to help users find visually similar products.
+        </p>
+      </div>
+
+      <!-- PROBLEM STATEMENT + OBJECTIVES (side by side) -->
+      <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 24px;">
+        <div class="section">
+          <div class="section-title">Problem Statement</div>
+          <ul>
+            <li>Hijab product data is fragmented across different brands with inconsistent formats</li>
+            <li>Limited filtering criteria (colour, size, fabric) in existing platforms</li>
+            <li>No quick-access tool to revisit previously viewed products</li>
+            <li>Minimal cross-brand product recommendations</li>
+          </ul>
+        </div>
+        <div class="section">
+          <div class="section-title">Objectives</div>
+          <div class="obj-item">
+            <span class="obj-num">1</span>
+            <p>Develop a normalized data model for consistent product attributes</p>
+          </div>
+          <div class="obj-item">
+            <span class="obj-num">2</span>
+            <p>Implement faceted filtering with colour, size, material, and brand criteria</p>
+          </div>
+          <div class="obj-item">
+            <span class="obj-num">3</span>
+            <p>Build a Favourites feature for quick product access</p>
+          </div>
+          <div class="obj-item">
+            <span class="obj-num">4</span>
+            <p>Develop a colour-based recommendation using HSL matching</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- METHODOLOGY -->
+      <div class="section">
+        <div class="section-title">Methodology</div>
+        <p><strong>Agile (Scrum)</strong> with iterative sprint cycles for rapid delivery and continuous improvement:</p>
+        <div class="method-steps">
+          <div class="method-step">Planning</div>
+          <span class="method-arrow">&rarr;</span>
+          <div class="method-step">Design</div>
+          <span class="method-arrow">&rarr;</span>
+          <div class="method-step">Develop</div>
+          <span class="method-arrow">&rarr;</span>
+          <div class="method-step">Test</div>
+          <span class="method-arrow">&rarr;</span>
+          <div class="method-step">Deploy</div>
+          <span class="method-arrow">&rarr;</span>
+          <div class="method-step">Review</div>
+        </div>
+        <p style="margin-top: 6px; font-size: 11px; color: #64748b;">Each sprint delivers a working feature. Expert evaluation at the end of each sprint guides improvements for the next iteration.</p>
+      </div>
+
+      <!-- SCREENSHOTS -->
+      <div class="section">
+        <div class="section-title">System Screenshots</div>
+        <div class="screenshot-row">
+          <div class="screenshot-placeholder">
+            <div class="icon">&#128722;</div>
+            <div class="label">Web Application</div>
+            <div class="hint">Home page, product listing, colour search</div>
+          </div>
+          <div class="screenshot-placeholder">
+            <div class="icon">&#128451;</div>
+            <div class="label">Database Schema</div>
+            <div class="hint">ERD diagram, Sanity schema, Prisma models</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- SYSTEM VALIDATION -->
+      <div class="section">
+        <div class="section-title">System Validation</div>
+        <table class="val-table">
+          <thead>
+            <tr>
+              <th style="width:30%">Test Case</th>
+              <th style="width:35%">Description</th>
+              <th style="width:20%">Method</th>
+              <th style="width:15%">Result</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>User Registration</td>
+              <td>Create account with email &amp; password</td>
+              <td>API testing</td>
+              <td><span class="badge-pass">PASS</span></td>
+            </tr>
+            <tr>
+              <td>User Login</td>
+              <td>Authenticate and retrieve session</td>
+              <td>API testing</td>
+              <td><span class="badge-pass">PASS</span></td>
+            </tr>
+            <tr>
+              <td>Product Browsing</td>
+              <td>View products by category and search</td>
+              <td>Functional</td>
+              <td><span class="badge-pass">PASS</span></td>
+            </tr>
+            <tr>
+              <td>Colour Search</td>
+              <td>Search products using colour keywords</td>
+              <td>Functional</td>
+              <td><span class="badge-pass">PASS</span></td>
+            </tr>
+            <tr>
+              <td>Add to Cart</td>
+              <td>Add items, update quantity, sync cart</td>
+              <td>Functional</td>
+              <td><span class="badge-pass">PASS</span></td>
+            </tr>
+            <tr>
+              <td>Favourites</td>
+              <td>Save and remove products from favourites</td>
+              <td>Functional</td>
+              <td><span class="badge-pass">PASS</span></td>
+            </tr>
+            <tr>
+              <td>Stripe Checkout</td>
+              <td>Complete payment and create order</td>
+              <td>Integration</td>
+              <td><span class="badge-pass">PASS</span></td>
+            </tr>
+            <tr>
+              <td>Seller Product Mgmt</td>
+              <td>Create, edit, delete product listings</td>
+              <td>Functional</td>
+              <td><span class="badge-pass">PASS</span></td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <!-- REFERENCES -->
+      <div class="section">
+        <div class="section-title">References</div>
+        <div class="ref-list">
+          <p>[1] Alsaqqa, A. et al. (2020). "Agile Software Development: A Systematic Mapping Study." <em>Journal of Software Engineering</em>.</p>
+          <p>[2] Mohamad, M. &amp; Hassim, N. (2019). "Hijab as Fashion Statement: A Study on Muslim Women in Malaysia." <em>International Journal of Social Science</em>.</p>
+          <p>[3] Salaam Gateway (2023). "State of the Global Islamic Economy Report 2023."</p>
+          <p>[4] Salem, R. (2022). "E-commerce and Modest Fashion: Online Shopping Behaviour of Muslim Women." <em>Journal of Fashion Marketing</em>.</p>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- FOOTER -->
+  <div class="footer">
+    <span>Faculty of Computing and Informatics | Universiti Malaysia Sabah</span>
+    <span>Final Year Project 2025 | Norain Aqilah Binti Shamsuddin</span>
+  </div>
+
+</div>
+</body>
+</html>

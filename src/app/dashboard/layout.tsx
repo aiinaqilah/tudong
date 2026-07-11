@@ -3,11 +3,11 @@ import Link from "next/link";
 import { getCurrentSession } from "@/actions/auth";
 import DashboardNav from "@/components/dashboard/DashboardNav";
 
-const userLinks = [
-  { href: "/dashboard/user", label: "Overview" },
-  { href: "/dashboard/user/orders", label: "My Orders" },
-  { href: "/dashboard/user/favorites", label: "Favourites" },
-  { href: "/dashboard/user/profile", label: "Profile" },
+const customerLinks = [
+  { href: "/dashboard/customer", label: "Overview" },
+  { href: "/dashboard/customer/orders", label: "My Orders" },
+  { href: "/dashboard/customer/favorites", label: "Favourites" },
+  { href: "/dashboard/customer/profile", label: "Profile" },
 ];
 
 const sellerLinks = [
@@ -16,6 +16,7 @@ const sellerLinks = [
   { href: "/dashboard/seller/products", label: "My Products" },
   { href: "/dashboard/seller/collections", label: "Collections" },
   { href: "/dashboard/seller/orders", label: "Orders" },
+  { href: "/dashboard/seller/settings", label: "Settings" },
 ];
 
 const adminLinks = [
@@ -29,7 +30,7 @@ const adminLinks = [
 function roleLinks(role: string) {
   if (role === "admin") return adminLinks;
   if (role === "seller") return sellerLinks;
-  return userLinks;
+  return customerLinks;
 }
 
 export default async function DashboardLayout({
@@ -40,7 +41,7 @@ export default async function DashboardLayout({
   const { user } = await getCurrentSession();
   if (!user) redirect("/api/login");
 
-  const role = (user as { role?: string }).role ?? "user";
+  const role = (user as { role?: string }).role ?? "customer";
   const links = roleLinks(role);
 
   const initials = user.name

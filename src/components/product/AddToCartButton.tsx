@@ -16,7 +16,7 @@ type AddToCartButtonProps = {
 
 const AddToCartButton = ({ product, effectivePrice }: AddToCartButtonProps) => {
     const { data: session } = authClient.useSession();
-    const role = (session?.user as { role?: string })?.role ?? "user";
+    const role = (session?.user as { role?: string })?.role ?? "customer";
 
     const { addItem, open } = useCartStore(
         useShallow((state) => ({

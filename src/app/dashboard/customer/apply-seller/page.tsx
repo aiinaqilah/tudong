@@ -19,7 +19,7 @@ export default function ApplySellerPage() {
       if (result?.error) {
         setError(result.error);
       } else {
-        router.push("/dashboard/user");
+        router.push("/dashboard/customer");
       }
     });
   };
@@ -28,7 +28,7 @@ export default function ApplySellerPage() {
     <div className="max-w-xl">
       <div className="mb-6">
         <Link
-          href="/dashboard/user"
+          href="/dashboard/customer"
           className="text-xs text-gray-400 hover:text-gray-600 transition-colors"
         >
           ← Back to Dashboard

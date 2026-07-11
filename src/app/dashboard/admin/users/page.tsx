@@ -1,6 +1,6 @@
 import { getAllUsers, updateUserRole } from "@/actions/admin-actions";
 
-const ROLES = ["user", "seller", "admin"] as const;
+const ROLES = ["customer", "seller", "admin"] as const;
 
 export default async function AdminUsersPage() {
   const users = await getAllUsers();
@@ -60,7 +60,7 @@ function RoleBadge({ role }: { role: string }) {
   const colors: Record<string, string> = {
     admin: "bg-red-100 text-red-800",
     seller: "bg-blue-100 text-blue-800",
-    user: "bg-gray-100 text-gray-700",
+    customer: "bg-gray-100 text-gray-700",
   };
   return (
     <span className={`px-2 py-0.5 rounded text-xs font-medium capitalize ${colors[role] ?? "bg-gray-100 text-gray-700"}`}>

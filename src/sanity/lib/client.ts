@@ -215,11 +215,17 @@ export const deleteSellerCollection = async (collectionId: string) => {
   return writeClient.delete(collectionId);
 }
 
-export type SellerBrand = { _id: string; name: string; sellerId: string };
+export type SellerBrand = {
+  _id: string;
+  name: string;
+  sellerId: string;
+  sellerName: string | null;
+  defaultShippingPrice: number;
+};
 
 export const getSellerBrand = async (sellerId: string): Promise<SellerBrand | null> => {
   return client.fetch(
-    `*[_type == "brand" && sellerId == $sellerId][0]{ _id, name, sellerId }`,
+    `*[_type == "brand" && sellerId == $sellerId][0]{ _id, name, sellerId, sellerName, defaultShippingPrice }`,
     { sellerId },
     { cache: 'no-store' }
   );
@@ -250,6 +256,7 @@ export type FullSellerProduct = {
   color: { _key: string; name: string; hex: string }[];
   image: { _key: string; _ref: string; url: string }[];
   sellerId: string;
+  shippingOverride: number | null;
 };
 
 export const getSanityProductById = async (
@@ -257,7 +264,7 @@ export const getSanityProductById = async (
   sellerId: string
 ): Promise<FullSellerProduct | null> => {
   const query = `*[_type == "product" && _id == $id && sellerId == $sellerId][0]{
-    _id, title, description, price, stock, inStock, discount, sellerId,
+    _id, title, description, price, stock, inStock, discount, sellerId, shippingOverride,
     "categoryId": category->_id,
     "category": category->title,
     "brandId": brand->_id,
@@ -308,6 +315,7 @@ export const createSanityProduct = async (data: {
   collectionId?: string;
   colors?: { name: string; hex: string }[];
   sizeIds?: string[];
+  shippingOverride?: number;
 }) => {
   const slug = data.title
     .toLowerCase()
@@ -349,6 +357,9 @@ export const createSanityProduct = async (data: {
         _ref: id,
       })),
     } : {}),
+    ...(data.shippingOverride !== undefined ? {
+      shippingOverride: data.shippingOverride,
+    } : {}),
   });
 }
 
@@ -373,6 +384,7 @@ export const updateSanityProduct = async (
     newImageAssetIds?: string[];
     keepImageKeys?: string[];
     existingImages?: { _key: string; _ref: string }[];
+    shippingOverride?: number | null;
   }
 ) => {
   const patch: Record<string, unknown> = {};
@@ -423,6 +435,9 @@ export const updateSanityProduct = async (
       asset: { _type: 'reference', _ref: assetId },
     }));
     patch.image = [...kept, ...added];
+  }
+  if (data.shippingOverride !== undefined) {
+    patch.shippingOverride = data.shippingOverride;
   }
 
   return writeClient.patch(productId).set(patch).commit();

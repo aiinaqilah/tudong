@@ -8,8 +8,8 @@ export async function submitSellerApplication(formData: FormData) {
   const { user } = await getCurrentSession();
   if (!user) return { error: "Not authenticated" };
 
-  const role = (user as { role?: string }).role ?? "user";
-  if (role !== "user") return { error: "Only regular users can apply to become a seller" };
+  const role = (user as { role?: string }).role ?? "customer";
+  if (role !== "customer") return { error: "Only customers can apply to become a seller" };
 
   const brandName = (formData.get("brandName") as string)?.trim();
   const description = (formData.get("description") as string)?.trim();
@@ -27,7 +27,7 @@ export async function submitSellerApplication(formData: FormData) {
       where: { userId: user.id },
       data: { brandName, description, instagram, website, status: "PENDING" },
     });
-    revalidatePath("/dashboard/user");
+    revalidatePath("/dashboard/customer");
     return { success: true };
   }
 
@@ -35,7 +35,7 @@ export async function submitSellerApplication(formData: FormData) {
     data: { userId: user.id, brandName, description, instagram, website },
   });
 
-  revalidatePath("/dashboard/user");
+  revalidatePath("/dashboard/customer");
   return { success: true };
 }
 

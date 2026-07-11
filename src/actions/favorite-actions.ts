@@ -24,7 +24,7 @@ export async function addFavorite(productId: string) {
     update: {},
   });
 
-  revalidatePath("/dashboard/user/favorites");
+  revalidatePath("/dashboard/customer/favorites");
   return { success: true };
 }
 
@@ -36,7 +36,7 @@ export async function removeFavorite(productId: string) {
     where: { userId: user.id, productId },
   });
 
-  revalidatePath("/dashboard/user/favorites");
+  revalidatePath("/dashboard/customer/favorites");
   return { success: true };
 }
 
@@ -51,5 +51,5 @@ export async function removeFavoriteAction(formData: FormData): Promise<void> {
     where: { userId: user.id, productId },
   });
 
-  revalidatePath("/dashboard/user/favorites");
+  revalidatePath("/dashboard/customer/favorites");
 }

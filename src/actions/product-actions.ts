@@ -30,6 +30,8 @@ export async function createProduct(formData: FormData) {
   const sizeIds = formData.getAll("sizeIds") as string[];
   const colorsJson = formData.get("colors") as string;
   const colors: { name: string; hex: string }[] = colorsJson ? JSON.parse(colorsJson) : [];
+  const shippingOverrideRaw = formData.get("shippingOverride") as string;
+  const shippingOverride = shippingOverrideRaw !== "" ? parseFloat(shippingOverrideRaw) : undefined;
 
   // Upload images to Sanity
   const imageFiles = formData.getAll("images") as File[];
@@ -56,6 +58,7 @@ export async function createProduct(formData: FormData) {
       collectionId,
       colors,
       sizeIds,
+      shippingOverride,
     });
 
     revalidatePath("/dashboard/seller/products");
@@ -115,6 +118,8 @@ export async function updateProduct(productId: string, formData: FormData) {
   const existingImages: { _key: string; _ref: string }[] = existingImagesJson
     ? JSON.parse(existingImagesJson)
     : [];
+  const shippingOverrideRaw = formData.get("shippingOverride") as string;
+  const shippingOverride = shippingOverrideRaw !== "" ? parseFloat(shippingOverrideRaw) : null;
 
   const imageFiles = formData.getAll("images") as File[];
   const newImageAssetIds: string[] = [];
@@ -141,6 +146,7 @@ export async function updateProduct(productId: string, formData: FormData) {
       newImageAssetIds,
       keepImageKeys,
       existingImages,
+      shippingOverride,
     });
     revalidatePath("/dashboard/seller/products");
     return { product: updated };

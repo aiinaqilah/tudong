@@ -2,6 +2,7 @@
 
 import { createCheckoutSession } from '@/actions/stripe-actions';
 import { validatePromoCode } from '@/actions/promo-actions';
+import { getShippingForProducts, type SellerShippingInfo } from '@/actions/shipping-actions';
 import { formatPrice } from '@/lib/utils';
 import { useCartStore, type CartItem as CartItemType } from '@/stores/cart-store';
 import { Loader2, ShoppingCart, X, Tag } from 'lucide-react';
@@ -10,7 +11,7 @@ import Link from 'next/link';
 import React, { useEffect, useMemo, useState } from 'react';
 import { useShallow } from 'zustand/shallow';
 
-const freeShippingAmount = 150;
+const FREE_SHIPPING_THRESHOLD = 150;
 
 const CartItem = ({ item }: { item: CartItemType }) => {
     const { removeItem, updateQuantity } = useCartStore(
@@ -114,11 +115,34 @@ const Cart = () => {
     const [promoLoading, setPromoLoading] = useState(false);
     const [appliedPromo, setAppliedPromo] = useState<AppliedPromo | null>(null);
 
+    // Shipping state
+    const [sellerShipping, setSellerShipping] = useState<SellerShippingInfo[]>([]);
+    const [shippingLoading, setShippingLoading] = useState(false);
+
     const totalPrice = getTotalPrice();
 
+    const totalShipping = useMemo(() => {
+      if (totalPrice >= FREE_SHIPPING_THRESHOLD) return 0;
+      return sellerShipping.reduce((sum, s) => sum + s.shippingCost, 0);
+    }, [sellerShipping, totalPrice]);
+
     const remainingForFreeShipping = useMemo(() => {
-        return Math.max(0, freeShippingAmount - totalPrice);
+      return Math.max(0, FREE_SHIPPING_THRESHOLD - totalPrice);
     }, [totalPrice]);
+
+    // Fetch shipping info when items change
+    useEffect(() => {
+      if (items.length === 0) {
+        setSellerShipping([]);
+        return;
+      }
+      setShippingLoading(true);
+      const productIds = items.map((item) => item.id);
+      getShippingForProducts(productIds)
+        .then(setSellerShipping)
+        .catch(() => setSellerShipping([]))
+        .finally(() => setShippingLoading(false));
+    }, [items]);
 
     const promoDiscountAmount = useMemo(() => {
         if (!appliedPromo) return 0;
@@ -245,7 +269,7 @@ const Cart = () => {
                                     <div className='w-full bg-blue-200 rounded-full h-2'>
                                         <div
                                             className='bg-blue-600 h-2 rounded-full transition-all duration-300'
-                                            style={{ width: `${Math.min(100, (totalPrice / freeShippingAmount) * 100)}%` }}
+                                            style={{ width: `${Math.min(100, (totalPrice / FREE_SHIPPING_THRESHOLD) * 100)}%` }}
                                         />
                                     </div>
                                 </div>
@@ -318,9 +342,25 @@ const Cart = () => {
                                     <div className='flex items-center justify-between text-sm'>
                                         <span className='text-gray-500'>Shipping</span>
                                         <span className='font-medium'>
-                                            {remainingForFreeShipping > 0 ? 'Calculated at checkout' : 'FREE'}
+                                            {totalPrice >= FREE_SHIPPING_THRESHOLD
+                                                ? 'FREE'
+                                                : shippingLoading
+                                                    ? 'Calculating...'
+                                                    : sellerShipping.length > 0
+                                                        ? formatPrice(totalShipping)
+                                                        : 'Calculated at checkout'}
                                         </span>
                                     </div>
+                                    {sellerShipping.length > 1 && totalPrice < FREE_SHIPPING_THRESHOLD && (
+                                        <div className='pl-4 space-y-1'>
+                                            {sellerShipping.map((s) => (
+                                                <div key={s.sellerId} className='flex items-center justify-between text-xs text-gray-400'>
+                                                    <span>{s.sellerName || 'Seller'}</span>
+                                                    <span>{formatPrice(s.shippingCost)}</span>
+                                                </div>
+                                            ))}
+                                        </div>
+                                    )}
                                 </div>
 
                                 <div className='border-t pt-4'>
@@ -328,9 +368,9 @@ const Cart = () => {
                                         <span className='font-medium text-lg'>Total</span>
                                         <div className='text-right'>
                                             {appliedPromo && (
-                                                <p className='text-xs text-gray-400 line-through'>{formatPrice(totalPrice)}</p>
+                                                <p className='text-xs text-gray-400 line-through'>{formatPrice(totalPrice + totalShipping)}</p>
                                             )}
-                                            <span className='font-bold text-lg'>{formatPrice(discountedTotal)}</span>
+                                            <span className='font-bold text-lg'>{formatPrice(discountedTotal + totalShipping)}</span>
                                         </div>
                                     </div>
 

@@ -17,7 +17,7 @@ type Props = {
 // each product card and adds a single unit straight to the cart drawer.
 export default function QuickAddButton({ product, effectivePrice }: Props) {
   const { data: session } = authClient.useSession();
-  const role = (session?.user as { role?: string })?.role ?? "user";
+  const role = (session?.user as { role?: string })?.role ?? "customer";
   const { addItem, open } = useCartStore(
     useShallow((state) => ({ addItem: state.addItem, open: state.open }))
   );

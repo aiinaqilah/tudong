@@ -49,7 +49,7 @@ export default async function UserProfilePage() {
             label="Account Role"
             value={
               <span className="inline-block px-2.5 py-0.5 rounded-full text-xs font-semibold bg-gray-100 text-gray-700 capitalize">
-                {(user as { role?: string })?.role ?? "user"}
+                {(user as { role?: string })?.role ?? "customer"}
               </span>
             }
           />
