@@ -20,41 +20,8 @@ export function isNewProduct(createdAt?: string | null): boolean {
     return Date.now() - new Date(createdAt).getTime() < NEW_PRODUCT_WINDOW_MS;
 }
 
-export type ActiveCampaign = {
-  _id: string;
-  title: string;
-  discountType: 'percentage' | 'fixed';
-  discountValue: number;
-  productRefs: string[] | null;
-};
-
-export function computeCampaignMap(
-  products: { _id: string; price?: number | null; discount?: number | null }[],
-  campaigns: ActiveCampaign[]
-): Map<string, number> {
-  const map = new Map<string, number>();
-  for (const product of products) {
-    const originalPrice = product.price ?? 0;
-    let bestPrice = originalPrice;
-
-    // Seller-assigned percentage discount
-    if (product.discount && product.discount > 0) {
-      bestPrice = Math.min(bestPrice, Math.max(0, originalPrice * (1 - product.discount / 100)));
-    }
-
-    // Admin promotion campaigns
-    for (const campaign of campaigns) {
-      if (campaign.productRefs?.includes(product._id)) {
-        const discounted = campaign.discountType === 'percentage'
-          ? originalPrice * (1 - campaign.discountValue / 100)
-          : originalPrice - campaign.discountValue;
-        if (discounted < bestPrice) bestPrice = Math.max(0, discounted);
-      }
-    }
-
-    if (bestPrice < originalPrice) {
-      map.set(product._id, bestPrice);
-    }
-  }
-  return map;
+/** Compute the effective discounted price from a seller-set discount percentage. */
+export function getEffectivePrice(price: number | null | undefined, discount: number | null | undefined): number | undefined {
+    if (!price || !discount || discount <= 0) return undefined;
+    return Math.max(0, price * (1 - discount / 100));
 }

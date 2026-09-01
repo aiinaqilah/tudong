@@ -3,20 +3,31 @@
 import { revalidatePath } from "next/cache";
 import { getCurrentSession } from "@/actions/auth";
 import prisma from "@/lib/db";
+import { createClient } from "next-sanity";
+import { sellerApplicationSchema } from "@/lib/validation";
+import { rateLimit } from "@/lib/rate-limit";
 
 export async function submitSellerApplication(formData: FormData) {
   const { user } = await getCurrentSession();
   if (!user) return { error: "Not authenticated" };
 
   const role = (user as { role?: string }).role ?? "customer";
-  if (role !== "customer") return { error: "Only customers can apply to become a seller" };
+  if (role !== "customer" && role !== "user") return { error: "Only customers can apply to become a seller" };
 
-  const brandName = (formData.get("brandName") as string)?.trim();
-  const description = (formData.get("description") as string)?.trim();
-  const instagram = (formData.get("instagram") as string)?.trim() || null;
-  const website = (formData.get("website") as string)?.trim() || null;
+  if (!rateLimit(`user:${user.id}:apply-seller`, 3, 60_000).allowed) {
+    return { error: "Too many attempts. Please try again shortly." };
+  }
 
-  if (!brandName || !description) return { error: "Brand name and description are required" };
+  const parsed = sellerApplicationSchema.safeParse({
+    brandName: formData.get("brandName"),
+    description: formData.get("description"),
+    instagram: formData.get("instagram"),
+    website: formData.get("website"),
+  });
+
+  if (!parsed.success) return { error: "Invalid application details" };
+
+  const { brandName, description, instagram, website } = parsed.data;
 
   const existing = await prisma.sellerApplication.findUnique({ where: { userId: user.id } });
   if (existing) {
@@ -82,6 +93,28 @@ export async function approveApplication(applicationId: string): Promise<void> {
       data: { role: "seller" },
     }),
   ]);
+
+  // Create brand document in Sanity
+  const sanityClient = createClient({
+    projectId: process.env.NEXT_PUBLIC_SANITY_PROJECT_ID!,
+    dataset: process.env.NEXT_PUBLIC_SANITY_DATASET!,
+    apiVersion: process.env.NEXT_PUBLIC_SANITY_API_VERSION!,
+    useCdn: false,
+    token: process.env.SANITY_API_WRITE_TOKEN,
+  });
+
+  const slug = application.brandName
+    .toLowerCase()
+    .replace(/\s+/g, "-")
+    .replace(/[^a-z0-9-]/g, "");
+
+  await sanityClient.create({
+    _type: "brand",
+    name: application.brandName,
+    slug: { _type: "slug", current: slug },
+    description: application.description,
+    sellerId: application.userId,
+  });
 
   revalidatePath("/dashboard/admin/applications");
 }

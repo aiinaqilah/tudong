@@ -17,6 +17,7 @@ export async function getUserFavorites() {
 export async function addFavorite(productId: string) {
   const { user } = await getCurrentSession();
   if (!user) return { error: "Not authenticated" };
+  if (!productId?.trim() || productId.length > 100) return { error: "Invalid product" };
 
   await prisma.favorite.upsert({
     where: { userId_productId: { userId: user.id, productId } },
@@ -31,6 +32,7 @@ export async function addFavorite(productId: string) {
 export async function removeFavorite(productId: string) {
   const { user } = await getCurrentSession();
   if (!user) return { error: "Not authenticated" };
+  if (!productId?.trim() || productId.length > 100) return;
 
   await prisma.favorite.deleteMany({
     where: { userId: user.id, productId },
@@ -45,7 +47,7 @@ export async function removeFavoriteAction(formData: FormData): Promise<void> {
   if (!user) return;
 
   const productId = formData.get("productId") as string;
-  if (!productId) return;
+  if (!productId?.trim() || productId.length > 100) return;
 
   await prisma.favorite.deleteMany({
     where: { userId: user.id, productId },

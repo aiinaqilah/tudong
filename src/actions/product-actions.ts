@@ -10,6 +10,17 @@ import {
   updateSanityProduct,
   uploadProductImage,
 } from "@/sanity/lib/client";
+import { createProductSchema, updateProductSchema } from "@/lib/validation";
+import { rateLimit } from "@/lib/rate-limit";
+
+function parseColorInput(raw: string): { name: string; hex: string }[] {
+  if (!raw) return [];
+  try {
+    return JSON.parse(raw);
+  } catch {
+    return [];
+  }
+}
 
 export async function createProduct(formData: FormData) {
   const { user } = await getCurrentSession();
@@ -18,20 +29,33 @@ export async function createProduct(formData: FormData) {
   const role = (user as { role?: string }).role;
   if (role !== "seller" && role !== "admin") return { error: "Not authorized" };
 
-  const title = formData.get("title") as string;
-  const description = formData.get("description") as string;
-  const price = parseFloat(formData.get("price") as string);
-  const stock = parseInt(formData.get("stock") as string, 10) || 0;
-  const inStock = formData.get("inStock") === "on";
-  const categoryId = (formData.get("categoryId") as string) || undefined;
-  const brandId = (formData.get("brandId") as string) || undefined;
-  const materialId = (formData.get("materialId") as string) || undefined;
-  const collectionId = (formData.get("collectionId") as string) || undefined;
-  const sizeIds = formData.getAll("sizeIds") as string[];
-  const colorsJson = formData.get("colors") as string;
-  const colors: { name: string; hex: string }[] = colorsJson ? JSON.parse(colorsJson) : [];
-  const shippingOverrideRaw = formData.get("shippingOverride") as string;
-  const shippingOverride = shippingOverrideRaw !== "" ? parseFloat(shippingOverrideRaw) : undefined;
+  if (!rateLimit(`user:${user.id}:create-product`, 20, 60_000).allowed) {
+    return { error: "Too many requests. Please try again shortly." };
+  }
+
+  const colors = parseColorInput(formData.get("colors") as string);
+
+  const parsed = createProductSchema.safeParse({
+    title: formData.get("title"),
+    description: formData.get("description"),
+    price: parseFloat(formData.get("price") as string),
+    stock: parseInt(formData.get("stock") as string, 10) || 0,
+    inStock: formData.get("inStock") === "on",
+    categoryId: (formData.get("categoryId") as string) || undefined,
+    brandId: (formData.get("brandId") as string) || undefined,
+    materialId: (formData.get("materialId") as string) || undefined,
+    collectionId: (formData.get("collectionId") as string) || undefined,
+    sizeIds: formData.getAll("sizeIds") as string[],
+    colors,
+    shippingOverride:
+      (formData.get("shippingOverride") as string) !== ""
+        ? parseFloat(formData.get("shippingOverride") as string)
+        : undefined,
+  });
+
+  if (!parsed.success) return { error: "Invalid product details" };
+
+  const data = parsed.data;
 
   // Upload images to Sanity
   const imageFiles = formData.getAll("images") as File[];
@@ -45,20 +69,20 @@ export async function createProduct(formData: FormData) {
 
   try {
     const product = await createSanityProduct({
-      title,
-      description,
-      price,
-      stock,
-      inStock,
+      title: data.title,
+      description: data.description,
+      price: data.price,
+      stock: data.stock,
+      inStock: data.inStock,
       sellerId: user.id,
       imageAssetIds,
-      categoryId,
-      brandId,
-      materialId,
-      collectionId,
-      colors,
-      sizeIds,
-      shippingOverride,
+      categoryId: data.categoryId,
+      brandId: data.brandId,
+      materialId: data.materialId,
+      collectionId: data.collectionId,
+      colors: data.colors,
+      sizeIds: data.sizeIds,
+      shippingOverride: data.shippingOverride,
     });
 
     revalidatePath("/dashboard/seller/products");
@@ -100,26 +124,38 @@ export async function updateProduct(productId: string, formData: FormData) {
   const role = (user as { role?: string }).role;
   if (role !== "seller" && role !== "admin") return { error: "Not authorized" };
 
-  const title = formData.get("title") as string;
-  const description = formData.get("description") as string;
-  const price = parseFloat(formData.get("price") as string);
-  const stock = parseInt(formData.get("stock") as string, 10) || 0;
-  const inStock = formData.get("inStock") === "on";
-  const discountRaw = formData.get("discount") as string;
-  const discount = discountRaw !== "" ? parseFloat(discountRaw) : null;
-  const categoryId = (formData.get("categoryId") as string) || undefined;
-  const materialId = (formData.get("materialId") as string) || undefined;
-  const collectionId = (formData.get("collectionId") as string) || undefined;
-  const sizeIds = formData.getAll("sizeIds") as string[];
-  const colorsJson = formData.get("colors") as string;
-  const colors: { name: string; hex: string }[] = colorsJson ? JSON.parse(colorsJson) : [];
-  const keepImageKeys = formData.getAll("keepImageKeys") as string[];
-  const existingImagesJson = formData.get("existingImages") as string;
-  const existingImages: { _key: string; _ref: string }[] = existingImagesJson
-    ? JSON.parse(existingImagesJson)
-    : [];
-  const shippingOverrideRaw = formData.get("shippingOverride") as string;
-  const shippingOverride = shippingOverrideRaw !== "" ? parseFloat(shippingOverrideRaw) : null;
+  if (!rateLimit(`user:${user.id}:update-product`, 30, 60_000).allowed) {
+    return { error: "Too many requests. Please try again shortly." };
+  }
+
+  const colors = parseColorInput(formData.get("colors") as string);
+
+  const parsed = updateProductSchema.safeParse({
+    title: formData.get("title"),
+    description: formData.get("description"),
+    price: parseFloat(formData.get("price") as string),
+    stock: parseInt(formData.get("stock") as string, 10) || 0,
+    inStock: formData.get("inStock") === "on",
+    discount:
+      (formData.get("discount") as string) !== ""
+        ? parseFloat(formData.get("discount") as string)
+        : null,
+    categoryId: (formData.get("categoryId") as string) || undefined,
+    materialId: (formData.get("materialId") as string) || undefined,
+    collectionId: (formData.get("collectionId") as string) || undefined,
+    sizeIds: formData.getAll("sizeIds") as string[],
+    colors,
+    keepImageKeys: formData.getAll("keepImageKeys") as string[],
+    existingImages: parseColorInputJson(formData.get("existingImages") as string),
+    shippingOverride:
+      (formData.get("shippingOverride") as string) !== ""
+        ? parseFloat(formData.get("shippingOverride") as string)
+        : null,
+  });
+
+  if (!parsed.success) return { error: "Invalid product details" };
+
+  const data = parsed.data;
 
   const imageFiles = formData.getAll("images") as File[];
   const newImageAssetIds: string[] = [];
@@ -132,25 +168,34 @@ export async function updateProduct(productId: string, formData: FormData) {
 
   try {
     const updated = await updateSanityProduct(productId, {
-      title,
-      description,
-      price,
-      stock,
-      inStock,
-      discount,
-      categoryId,
-      materialId,
-      collectionId,
-      colors,
-      sizeIds,
+      title: data.title,
+      description: data.description,
+      price: data.price,
+      stock: data.stock,
+      inStock: data.inStock,
+      discount: data.discount ?? null,
+      categoryId: data.categoryId,
+      materialId: data.materialId,
+      collectionId: data.collectionId,
+      colors: data.colors,
+      sizeIds: data.sizeIds,
       newImageAssetIds,
-      keepImageKeys,
-      existingImages,
-      shippingOverride,
+      keepImageKeys: data.keepImageKeys ?? [],
+      existingImages: data.existingImages ?? [],
+      shippingOverride: data.shippingOverride ?? null,
     });
     revalidatePath("/dashboard/seller/products");
     return { product: updated };
   } catch {
     return { error: "Failed to update product" };
+  }
+}
+
+function parseColorInputJson(raw: string): { _key: string; _ref: string }[] {
+  if (!raw) return [];
+  try {
+    return JSON.parse(raw);
+  } catch {
+    return [];
   }
 }

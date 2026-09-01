@@ -1,23 +1,17 @@
-import { getSaleProducts, getActiveCampaigns } from "@/sanity/lib/client";
+import { getSaleProducts } from "@/sanity/lib/client";
 import { getUserFavorites } from "@/actions/favorite-actions";
-import { computeCampaignMap } from "@/lib/utils";
 import ProductGrid from "@/components/product/ProductGrid";
-// import SalesCampaignBanner from "@/components/layout/SalesCampaignBanner";
 
 export default async function SalePage() {
-    const [products, campaigns, favorites] = await Promise.all([
+    const [products, favorites] = await Promise.all([
         getSaleProducts(),
-        getActiveCampaigns(),
         getUserFavorites(),
     ]);
 
     const favoriteIds = new Set(favorites.map((f) => f.productId));
-    const campaignMap = computeCampaignMap(products, campaigns);
 
     return (
         <div>
-            {/* <SalesCampaignBanner /> */}
-
             {/* Sale header */}
             <div className="bg-gradient-to-r from-red-600 to-orange-500 py-10 text-center">
                 <p className="text-white/80 text-sm font-semibold uppercase tracking-widest mb-2">
@@ -29,20 +23,6 @@ export default async function SalePage() {
                 <p className="text-white/90 text-lg">
                     {products.length} {products.length === 1 ? 'item' : 'items'} on sale now
                 </p>
-
-                {/* Active campaign names */}
-                {campaigns.length > 0 && (
-                    <div className="flex flex-wrap items-center justify-center gap-2 mt-4">
-                        {campaigns.map((c) => (
-                            <span
-                                key={c._id}
-                                className="bg-white/20 text-white text-xs font-semibold uppercase tracking-wide px-3 py-1 rounded-full"
-                            >
-                                {c.title} — {c.discountType === 'percentage' ? `${c.discountValue}% off` : `RM${c.discountValue} off`}
-                            </span>
-                        ))}
-                    </div>
-                )}
             </div>
 
             <section className="container mx-auto py-10">
@@ -56,7 +36,6 @@ export default async function SalePage() {
                     <ProductGrid
                         products={products}
                         favoriteIds={favoriteIds}
-                        campaignMap={campaignMap}
                     />
                 )}
             </section>

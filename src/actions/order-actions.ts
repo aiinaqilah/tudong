@@ -4,12 +4,14 @@ import { getCurrentSession } from "@/actions/auth";
 import { client } from "@/sanity/lib/client";
 import prisma from "@/lib/db";
 import { sendShippedEmail, sendOrderCompleteEmail } from "@/lib/email";
+import { updateOrderStatusSchema, trackingInfoSchema } from "@/lib/validation";
 
 export type SanityOrderItem = {
   _key: string;
   product: { _ref: string; _type: "reference" } | null;
   quantity: number;
   price: number;
+  size?: string | null;
   productTitle?: string;
 };
 
@@ -54,6 +56,7 @@ const ORDER_FIELDS = `
     product,
     quantity,
     price,
+    size,
     "productTitle": product->title
   },
   trackingNumber,
@@ -136,9 +139,12 @@ export async function updateOrderStatus(orderId: string, formData: FormData): Pr
   const { user } = await getCurrentSession();
   if (!user) return;
 
-  const status = formData.get("status") as string;
-  const validStatuses = ["PROCESSING", "SHIPPED", "DELIVERED", "CANCELLED"];
-  if (!validStatuses.includes(status)) return;
+  const statusRaw = formData.get("status") as string;
+  const parsedStatus = updateOrderStatusSchema.safeParse(statusRaw);
+  if (!parsedStatus.success) return;
+  const status = parsedStatus.data;
+
+  if (!orderId?.trim()) return;
 
   const role = (user as { role?: string }).role;
 
@@ -278,9 +284,14 @@ export async function updateTrackingInfo(orderId: string, formData: FormData): P
   const { user } = await getCurrentSession();
   if (!user) return;
 
-  const trackingNumber = (formData.get("trackingNumber") as string).trim();
-  const trackingUrl = (formData.get("trackingUrl") as string).trim();
-  if (trackingUrl && !trackingUrl.startsWith("http")) return;
+  if (!orderId?.trim()) return;
+
+  const parsed = trackingInfoSchema.safeParse({
+    trackingNumber: formData.get("trackingNumber"),
+    trackingUrl: formData.get("trackingUrl"),
+  });
+  if (!parsed.success) return;
+  const { trackingNumber, trackingUrl } = parsed.data;
 
   const role = (user as { role?: string }).role;
 

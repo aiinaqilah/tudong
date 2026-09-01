@@ -28,6 +28,7 @@ export const orderItem = defineType({
         }),
         defineField({ name: 'quantity', title: 'Quantity', type: 'number' }),
         defineField({ name: 'price', title: 'Price', type: 'number' }),
+        defineField({ name: 'size', title: 'Size', type: 'string' }),
     ],
 });
 

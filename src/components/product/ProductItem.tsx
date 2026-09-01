@@ -41,7 +41,7 @@ const ProductItem = ({ product, isFavorited = false, effectivePrice }: ProductIt
         {/* Favourite + quick add-to-cart */}
         <div className='absolute top-3 left-3 z-10 flex items-center gap-1.5'>
             <FavoriteButton productId={product._id} isFavorited={isFavorited} size="sm" />
-            <QuickAddButton product={product} effectivePrice={effectivePrice} />
+            {!product.size?.length && <QuickAddButton product={product} effectivePrice={effectivePrice} />}
         </div>
 
         <div className='relative h-52 w-full overflow-hidden bg-secondary/40'>

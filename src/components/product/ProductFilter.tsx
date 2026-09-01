@@ -3,6 +3,7 @@
 import React, { useState } from "react";
 import { Product } from "@/sanity.types";
 import { getColorFamily, type ColorFamily } from "@/lib/color";
+import { getEffectivePrice } from "@/lib/utils";
 import ProductGrid from "@/components/product/ProductGrid";
 
 type Option = { _id: string; name: string };
@@ -13,8 +14,6 @@ type ProductFilterProps = {
   materials: Option[];
   sizes: Option[];
   favoriteProductIds: string[];
-  /** product _id -> effective (discounted) price */
-  campaign: Record<string, number>;
 };
 
 // The 12-colour palette — one swatch per colour family recognised by getColorFamily.
@@ -60,7 +59,6 @@ export default function ProductFilter({
   materials,
   sizes,
   favoriteProductIds,
-  campaign,
 }: ProductFilterProps) {
   const [selectedBrands, setSelectedBrands] = useState<string[]>([]);
   const [selectedMaterials, setSelectedMaterials] = useState<string[]>([]);
@@ -71,9 +69,8 @@ export default function ProductFilter({
   const [showFilters, setShowFilters] = useState(false);
 
   const favoriteIds = new Set(favoriteProductIds);
-  const campaignMap = new Map(Object.entries(campaign));
 
-  const priceOf = (p: Product) => campaignMap.get(p._id) ?? p.price ?? 0;
+  const priceOf = (p: Product) => getEffectivePrice(p.price, p.discount) ?? p.price ?? 0;
   const familiesOf = (p: Product) =>
     new Set(
       (p.color ?? [])
@@ -314,7 +311,7 @@ export default function ProductFilter({
               </button>
             </div>
           ) : (
-            <ProductGrid products={filtered} favoriteIds={favoriteIds} campaignMap={campaignMap} />
+            <ProductGrid products={filtered} favoriteIds={favoriteIds} />
           )}
         </div>
       </div>

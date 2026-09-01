@@ -1,12 +1,18 @@
 import { redirect } from "next/navigation";
 import Stripe from "stripe";
 import Link from "next/link";
+import { client } from "@/sanity/lib/client";
 
 const getCheckoutSession = async (sessionId: string) => {
     const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
         apiVersion: '2026-05-27.dahlia',
     });
     return stripe.checkout.sessions.retrieve(sessionId);
+};
+
+type SanityOrder = {
+    orderNumber: string;
+    totalPrice: number;
 };
 
 const CheckoutSuccessPage = async ({
@@ -21,6 +27,13 @@ const CheckoutSuccessPage = async ({
     const session = await getCheckoutSession(session_id);
 
     if (!session) redirect('/');
+
+    // Fetch order(s) created by this checkout session
+    const orders = await client.fetch<SanityOrder[]>(
+        `*[_type == "order" && stripeCheckoutSessionId == $sessionId] | order(orderNumber asc){ orderNumber, totalPrice }`,
+        { sessionId: session_id },
+        { cache: "no-store" }
+    );
 
     const total = new Intl.NumberFormat('en-MY', {
         style: 'currency',
@@ -52,18 +65,35 @@ const CheckoutSuccessPage = async ({
                     <p className='text-gray-600 mb-6'>
                         We have received your order and will send you a confirmation email shortly!
                     </p>
+                    {orders.length > 0 && (
+                        <div className='mb-4 space-y-1'>
+                            {orders.map((order) => (
+                                <div key={order.orderNumber} className='text-sm text-gray-500'>
+                                    Order #{order.orderNumber}
+                                </div>
+                            ))}
+                        </div>
+                    )}
                     <div className='text-sm text-gray-500 mb-1'>
                         Order total: {total}
                     </div>
                     <div className='text-sm text-gray-500 mb-6'>
                         Order email: {session.customer_details?.email}
                     </div>
-                    <Link
-                        href='/'
-                        className='bg-black text-white px-6 py-2 rounded-full text-sm font-medium hover:bg-gray-800 transition-colors'
-                    >
-                        Continue Shopping
-                    </Link>
+                    <div className='flex flex-col gap-2'>
+                        <Link
+                            href='/dashboard/customer/orders'
+                            className='bg-black text-white px-6 py-2 rounded-full text-sm font-medium hover:bg-gray-800 transition-colors'
+                        >
+                            View My Orders
+                        </Link>
+                        <Link
+                            href='/'
+                            className='text-gray-500 text-sm hover:text-gray-700 transition-colors'
+                        >
+                            Continue Shopping
+                        </Link>
+                    </div>
                 </div>
             </div>
         </div>

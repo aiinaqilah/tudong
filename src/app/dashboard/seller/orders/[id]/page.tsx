@@ -120,6 +120,7 @@ export default async function SellerOrderDetailPage({
               <tr key={item._key} className="border-b border-gray-100 last:border-0">
                 <td className="px-4 py-3">
                   {item.productTitle ?? item.product?._ref ?? "—"}
+                  {item.size ? ` (${item.size})` : ""}
                 </td>
                 <td className="px-4 py-3 text-right">{item.quantity}</td>
                 <td className="px-4 py-3 text-right">

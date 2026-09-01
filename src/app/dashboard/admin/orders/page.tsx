@@ -1,4 +1,5 @@
 import { getAllOrders, updateOrderStatus } from "@/actions/order-actions";
+import ConfirmForm from "@/components/ui/ConfirmForm";
 
 const STATUSES = ["PROCESSING", "SHIPPED", "DELIVERED", "CANCELLED"] as const;
 
@@ -39,11 +40,15 @@ export default async function AdminOrdersPage() {
                     {new Date(order.orderDate).toLocaleDateString()}
                   </td>
                   <td className="py-3">
-                    <form action={updateOrderStatus.bind(null, order._id)}>
+                    <ConfirmForm
+                      action={updateOrderStatus.bind(null, order._id)}
+                      confirmMessage={`Update order #${order.orderNumber} status?`}
+                      className="flex items-center gap-2"
+                    >
                       <select
                         name="status"
                         defaultValue={order.status}
-                        className="text-xs border border-gray-300 rounded px-2 py-1 mr-2"
+                        className="text-xs border border-gray-300 rounded px-2 py-1"
                       >
                         {STATUSES.map((s) => (
                           <option key={s} value={s}>{s}</option>
@@ -52,7 +57,7 @@ export default async function AdminOrdersPage() {
                       <button type="submit" className="text-xs underline text-gray-700">
                         Save
                       </button>
-                    </form>
+                    </ConfirmForm>
                   </td>
                 </tr>
               ))}

@@ -3,6 +3,7 @@
 import { revalidatePath } from "next/cache";
 import { getCurrentSession } from "@/actions/auth";
 import prisma from "@/lib/db";
+import { updateUserRoleSchema } from "@/lib/validation";
 
 export async function getAllUsers() {
   const { user } = await getCurrentSession();
@@ -31,12 +32,13 @@ export async function updateUserRole(userId: string, formData: FormData): Promis
   if (role !== "admin") return;
 
   const newRole = formData.get("role") as string;
-  const validRoles = ["customer", "seller", "admin"];
-  if (!validRoles.includes(newRole)) return;
+  const parsedRole = updateUserRoleSchema.safeParse(newRole);
+  if (!parsedRole.success) return;
+  if (!userId?.trim()) return;
 
   await prisma.user.update({
-    where: { id: userId },
-    data: { role: newRole },
+    where: { id: userId.trim() },
+    data: { role: parsedRole.data },
   });
 
   revalidatePath("/dashboard/admin/users");

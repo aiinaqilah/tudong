@@ -5,6 +5,7 @@ import { validatePromoCode } from '@/actions/promo-actions';
 import { getShippingForProducts, type SellerShippingInfo } from '@/actions/shipping-actions';
 import { formatPrice } from '@/lib/utils';
 import { useCartStore, type CartItem as CartItemType } from '@/stores/cart-store';
+import { authClient } from '@/lib/auth-client';
 import { Loader2, ShoppingCart, X, Tag } from 'lucide-react';
 import Image from 'next/image';
 import Link from 'next/link';
@@ -36,6 +37,9 @@ const CartItem = ({ item }: { item: CartItemType }) => {
 
             <div className='flex-1 min-w-0'>
                 <h3 className='font-medium text-gray-900 truncate'>{item.title}</h3>
+                {item.size && (
+                    <p className='text-xs text-gray-500 mt-0.5'>Size: {item.size}</p>
+                )}
                 <div className='text-sm text-gray-500 mt-1'>
                     {isFreeItem ? (
                         <span className='text-emerald-600 font-medium'>FREE</span>
@@ -97,6 +101,8 @@ const Cart = () => {
             getTotalItems: state.getTotalItems,
         }))
     );
+
+    const { data: session } = authClient.useSession();
 
     useEffect(() => {
         const initCart = async () => {
@@ -188,6 +194,11 @@ const Cart = () => {
 
     const handleProceedToCheckout = async () => {
         if (!cartId || loadingProceed) return;
+        if (!session?.user) {
+            close();
+            window.location.href = '/api/login';
+            return;
+        }
         setLoadingProceed(true);
         const checkoutUrl = await createCheckoutSession(cartId, appliedPromo?.code);
         window.location.href = checkoutUrl;

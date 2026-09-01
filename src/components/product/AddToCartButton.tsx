@@ -12,9 +12,11 @@ import { useShallow } from 'zustand/shallow';
 type AddToCartButtonProps = {
     product: Product;
     effectivePrice?: number;
+    availableSizes?: string[];
+    selectedSize?: string;
 };
 
-const AddToCartButton = ({ product, effectivePrice }: AddToCartButtonProps) => {
+const AddToCartButton = ({ product, effectivePrice, availableSizes, selectedSize }: AddToCartButtonProps) => {
     const { data: session } = authClient.useSession();
     const role = (session?.user as { role?: string })?.role ?? "customer";
 
@@ -26,6 +28,10 @@ const AddToCartButton = ({ product, effectivePrice }: AddToCartButtonProps) => {
     );
 
     const [isLoading, setLoading] = useState(false);
+    const [error, setError] = useState<string | null>(null);
+
+    const requiresSize = (availableSizes?.length ?? 0) > 0;
+    const sizeError = requiresSize && !selectedSize;
 
     if (!product.price) return null;
     // Sellers are not buyers — hide the purchase control from seller accounts (UI-only).
@@ -37,62 +43,79 @@ const AddToCartButton = ({ product, effectivePrice }: AddToCartButtonProps) => {
         if(!product.title || product.price === undefined) {
             return;
         }
+        if (requiresSize && !selectedSize) {
+            setError("Please choose a size first.");
+            return;
+        }
         setLoading(true);
+        setError(null);
 
-        const firstImage = Array.isArray(product.image) ? product.image[0] : product.image;
+        try {
+            const firstImage = Array.isArray(product.image) ? product.image[0] : product.image;
 
-        await addItem({
-            id: product._id,
-            title: product.title,
-            price: priceToCharge,
-            image: firstImage ? urlFor(firstImage).url() : '',
-            quantity: 1,
-        });
+            await addItem({
+                sanityProductId: product._id,
+                id: product._id,
+                title: product.title,
+                price: priceToCharge,
+                image: firstImage ? urlFor(firstImage).url() : '',
+                quantity: 1,
+                size: selectedSize || undefined,
+            });
 
-        setLoading(false);
-        open();
+            open();
+        } catch {
+            setError("Failed to add to cart. Please try again.");
+        } finally {
+            setLoading(false);
+        }
     };
 
     return (
-        <button
-            onClick={handleAddToCart}
-            disabled={isLoading}
-            className={`
-                w-full mt-6 bg-foreground
-                text-background py-4 rounded-full font-bold text-xl
-                hover:bg-foreground/90
-                transition-all transform
-                hover:scale-[1.02] active:scale-[1.02]
-                shadow-xl flex items-center justify-center gap-3
-                disabled:opacity-80 disabled:cursor-not-allowed
-                disabled:hover:scale-100 disabled:active:scale-100
-                disabled:hover:bg-foreground
-            `}
-        >
-            {isLoading ? (
-                <>
-                    <Loader2 className='w-6 h-6 animate-spin' />
-                    <span>Adding to Cart...</span>
-                </>
-            ) : (
-                <>
-                    <svg
-                        className="w-6 h-6"
-                        fill="none"
-                        stroke="currentColor"
-                        viewBox="0 0 24 24"
-                    >
-                        <path
-                            strokeLinecap="round"
-                            strokeLinejoin="round"
-                            strokeWidth="2"
-                            d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z"
-                        />
-                    </svg>
-                    Add to Cart — {formatPrice(priceToCharge)}
-                </>
+        <div>
+            <button
+                onClick={handleAddToCart}
+                disabled={isLoading || sizeError}
+                className={`
+                    w-full mt-6 bg-foreground
+                    text-background py-4 rounded-full font-bold text-xl
+                    hover:bg-foreground/90
+                    transition-all transform
+                    hover:scale-[1.02] active:scale-[1.02]
+                    shadow-xl flex items-center justify-center gap-3
+                    disabled:opacity-80 disabled:cursor-not-allowed
+                    disabled:hover:scale-100 disabled:active:scale-100
+                    disabled:hover:bg-foreground
+                `}
+            >
+                {isLoading ? (
+                    <>
+                        <Loader2 className='w-6 h-6 animate-spin' />
+                        <span>Adding to Cart...</span>
+                    </>
+                ) : (
+                    <>
+                        <svg
+                            className="w-6 h-6"
+                            fill="none"
+                            stroke="currentColor"
+                            viewBox="0 0 24 24"
+                        >
+                            <path
+                                strokeLinecap="round"
+                                strokeLinejoin="round"
+                                strokeWidth="2"
+                                d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z"
+                            />
+                        </svg>
+                        {sizeError ? "Select a Size" : `Add to Cart — ${formatPrice(priceToCharge)}`}
+                    </>
+                )}
+            </button>
+            {error && (
+                <p className='text-sm text-red-500 mt-2 text-center'>{error}</p>
             )}
-        </button>
+        </div>
     );
 };
 

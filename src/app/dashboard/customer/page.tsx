@@ -7,10 +7,11 @@ import Link from "next/link";
 export default async function CustomerDashboardPage() {
   const { user } = await getCurrentSession();
   const role = (user as { role?: string } | null)?.role ?? "customer";
+  const isCustomer = role === "customer" || role === "user";
   const [orders, favorites, application] = await Promise.all([
     getUserOrders(),
     getUserFavorites(),
-    role === "customer" ? getMyApplication() : Promise.resolve(null),
+    role === "customer" || role === "user" ? getMyApplication() : Promise.resolve(null),
   ]);
 
   const processing = orders.filter((o) => o.status === "PROCESSING").length;
@@ -33,7 +34,7 @@ export default async function CustomerDashboardPage() {
       </div>
 
       {/* Seller application banner — only for regular customers */}
-      {role === "customer" && (
+      {isCustomer && (
         <div className={`mb-6 rounded-xl border px-5 py-4 flex items-center justify-between gap-4 ${
           application?.status === "PENDING"
             ? "bg-yellow-50 border-yellow-200"

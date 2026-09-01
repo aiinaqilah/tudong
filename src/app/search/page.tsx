@@ -1,8 +1,6 @@
-// import SalesCampaignBanner from '@/components/layout/SalesCampaignBanner';
 import ProductGrid from '@/components/product/ProductGrid';
-import { searchProducts, getActiveCampaigns } from '@/sanity/lib/client';
+import { searchProducts } from '@/sanity/lib/client';
 import { getUserFavorites } from '@/actions/favorite-actions';
-import { computeCampaignMap } from '@/lib/utils';
 import React from 'react';
 
 type SearchPageProps = {
@@ -11,19 +9,15 @@ type SearchPageProps = {
 const SearchPage = async ({ searchParams }: SearchPageProps) => {
     const { query } = await searchParams;
 
-    const [products, campaigns, favorites] = await Promise.all([
+    const [products, favorites] = await Promise.all([
         searchProducts(query),
-        getActiveCampaigns(),
         getUserFavorites(),
     ]);
 
     const favoriteIds = new Set(favorites.map((f) => f.productId));
-    const campaignMap = computeCampaignMap(products, campaigns);
 
     return (
         <div>
-            {/* <SalesCampaignBanner /> */}
-
             <div className='bg-red-50 p-4'>
                 <div className='container mx-auto'>
                     <h1 className='text-2xl md:text-3xl font-bold text-center text-red-600 mb-2'>
@@ -40,7 +34,7 @@ const SearchPage = async ({ searchParams }: SearchPageProps) => {
                     <p className='text-sm text-gray-500'> {products.length} Products Found </p>
                 </div>
 
-                <ProductGrid products={products} favoriteIds={favoriteIds} campaignMap={campaignMap} />
+                <ProductGrid products={products} favoriteIds={favoriteIds} />
             </section>
         </div>
     );

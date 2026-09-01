@@ -1,4 +1,5 @@
 import { getAllUsers, updateUserRole } from "@/actions/admin-actions";
+import ConfirmForm from "@/components/ui/ConfirmForm";
 
 const ROLES = ["customer", "seller", "admin"] as const;
 
@@ -32,11 +33,15 @@ export default async function AdminUsersPage() {
                   {new Date(user.createdAt).toLocaleDateString()}
                 </td>
                 <td className="py-3">
-                  <form action={updateUserRole.bind(null, user.id)}>
+                  <ConfirmForm
+                    action={updateUserRole.bind(null, user.id)}
+                    confirmMessage={`Change ${user.name ?? user.email}'s role?`}
+                    className="flex items-center gap-2"
+                  >
                     <select
                       name="role"
                       defaultValue={user.role}
-                      className="text-xs border border-gray-300 rounded px-2 py-1 mr-2"
+                      className="text-xs border border-gray-300 rounded px-2 py-1"
                     >
                       {ROLES.map((r) => (
                         <option key={r} value={r}>{r}</option>
@@ -45,7 +50,7 @@ export default async function AdminUsersPage() {
                     <button type="submit" className="text-xs underline text-gray-700">
                       Save
                     </button>
-                  </form>
+                  </ConfirmForm>
                 </td>
               </tr>
             ))}

@@ -3,6 +3,7 @@ import { createClient } from "next-sanity";
 import { headers } from "next/headers";
 import { NextResponse } from "next/server";
 import Stripe from "stripe";
+import { rateLimitByIp } from "@/lib/rate-limit";
 
 type SanityProduct = {
   _id: string;
@@ -10,6 +11,17 @@ type SanityProduct = {
 };
 
 export async function POST(req: Request) {
+    // Basic rate limiting: 20 webhook requests / minute per IP. Stripe
+    // retries reference the IDempotency of the request; this guards against
+    // hostile floods without breaking legitimate Stripe delivery.
+    const limited = rateLimitByIp(req, 20, 60_000);
+    if (!limited.allowed) {
+        return NextResponse.json(
+            { error: "Too many requests" },
+            { status: 429 }
+        );
+    }
+
     // Get Stripe client
     const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
         apiVersion: '2026-05-27.dahlia'
@@ -63,6 +75,15 @@ export async function POST(req: Request) {
 
                 if(!cartId) {
                     throw new Error("No cart ID in session metadata");
+                }
+
+                // Idempotency: skip if orders already exist for this session
+                const existingOrders = await sanityClient.fetch<string[]>(
+                    `*[_type == "order" && stripeCheckoutSessionId == $sessionId]._id`,
+                    { sessionId: session.id }
+                );
+                if (existingOrders.length > 0) {
+                    break;
                 }
 
                 const cart = await prisma.cart.findUnique({
@@ -141,7 +162,8 @@ export async function POST(req: Request) {
                                 _ref: item.sanityProductId,
                             },
                             quantity: item.quantity,
-                            price: item.price
+                            price: item.price,
+                            size: item.size ?? undefined,
                         })),
                         status: 'PROCESSING',
                     });

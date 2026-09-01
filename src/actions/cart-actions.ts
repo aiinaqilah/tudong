@@ -5,6 +5,7 @@ import prisma from "@/lib/prisma";
 import { Product } from "@/sanity.types";
 import { urlFor } from "@/sanity/lib/image";
 import { revalidatePath } from "next/cache";
+import { cartItemSchema } from "@/lib/validation";
 
 export const createCart = async () => {
     const { user } = await getCurrentSession();
@@ -71,41 +72,58 @@ export const updateCartItem = async (
         price?: number,
         image?: string,
         quantity?: number,
-    }
+    },
+    size?: string | null
 ) => {
-    const cart = await getOrCreateCart(cartId);
+    const parsed = cartItemSchema.safeParse({
+        cartId,
+        sanityProductId,
+        data,
+        size,
+    });
+    if (!parsed.success) return null;
+
+    const valid = parsed.data;
+    const cartIdValid = valid.cartId;
+    const sanityProductIdValid = valid.sanityProductId;
+    const dataValid = valid.data;
+
+    const cart = await getOrCreateCart(cartIdValid);
 
     const existingItem = cart.items.find(
-        (item: { sanityProductId: string }) => sanityProductId === item.sanityProductId
+        (item: { sanityProductId: string; size: string | null }) =>
+            sanityProductIdValid === item.sanityProductId &&
+            (item.size ?? null) === (valid.size ?? null)
     );
 
     if(existingItem) {
-        if(data.quantity === 0) {
+        if(dataValid.quantity === 0) {
             await prisma.cartLineItem.delete({
                 where: { id: existingItem.id }
             });
-        } else if(data.quantity && data.quantity > 0) {
+        } else if(dataValid.quantity && dataValid.quantity > 0) {
             await prisma.cartLineItem.update({
                 where: { id: existingItem.id },
-                data: { quantity: data.quantity }
+                data: { quantity: dataValid.quantity }
             });
         }
-    } else if(data.quantity && data.quantity > 0) {
+    } else if(dataValid.quantity && dataValid.quantity > 0) {
         await prisma.cartLineItem.create({
             data: {
                 id: crypto.randomUUID(),
                 cartId: cart.id,
-                sanityProductId,
-                quantity: data.quantity || 1,
-                title: data.title || '',
-                price: data.price || 0,
-                image: data.image || '',
+                sanityProductId: sanityProductIdValid,
+                quantity: dataValid.quantity || 1,
+                title: dataValid.title || '',
+                price: dataValid.price || 0,
+                image: dataValid.image || '',
+                size: valid.size ?? null,
             }
         });
     }
 
     revalidatePath("/");
-    return getOrCreateCart(cartId);
+    return getOrCreateCart(cartIdValid);
 }
 
 export const syncCartWithUser = async (cartId: string | null) => {
@@ -155,7 +173,9 @@ export const syncCartWithUser = async (cartId: string | null) => {
 
     for(const item of existingAnonymousCart.items) {
         const existingItem = existingUserCart.items.find(
-            (i: { sanityProductId: string }) => i.sanityProductId === item.sanityProductId
+            (i: { sanityProductId: string; size: string | null }) =>
+                i.sanityProductId === item.sanityProductId &&
+                (i.size ?? null) === (item.size ?? null)
         );
 
         if(existingItem) {
@@ -172,7 +192,8 @@ export const syncCartWithUser = async (cartId: string | null) => {
                     quantity: item.quantity,
                     title: item.title,
                     price: item.price,
-                    image: item.image
+                    image: item.image,
+                    size: item.size ?? null,
                 }
             });
         }

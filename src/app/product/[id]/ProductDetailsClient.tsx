@@ -136,6 +136,11 @@ const ProductDetailsClient = ({ product, isFavorited = false, effectivePrice }: 
     const displayPrice = isOnSale ? effectivePrice : originalPrice;
     const discountPct = isOnSale ? Math.round((1 - effectivePrice / originalPrice) * 100) : 0;
 
+    const sizes = ((product.sizes ?? []) as { _id: string; name: string }[])
+        .map((s) => s.name)
+        .filter(Boolean);
+    const [selectedSize, setSelectedSize] = useState<string>("");
+
     return (
         <div className='container mx-auto py-8'>
             <div className='grid grid-cols-1 md:grid-cols-2 gap-8'>
@@ -193,8 +198,43 @@ const ProductDetailsClient = ({ product, isFavorited = false, effectivePrice }: 
                         )}
                     </div>
 
+                    {/* Size Selection */}
+                    {sizes.length > 0 && (
+                        <div className='flex flex-col gap-2 mt-2'>
+                            <span className='text-sm font-medium text-foreground'>
+                                Size {!selectedSize && <span className='text-destructive'>— please select</span>}
+                            </span>
+                            <div className='flex flex-wrap gap-2'>
+                                {sizes.map((name) => {
+                                    const active = selectedSize === name;
+                                    return (
+                                        <button
+                                            key={name}
+                                            type="button"
+                                            onClick={() => setSelectedSize(name)}
+                                            className={`
+                                                px-4 py-2 rounded-full text-sm font-medium border transition-colors
+                                                ${active
+                                                    ? 'bg-foreground text-background border-foreground'
+                                                    : 'bg-background text-foreground border-border hover:border-foreground/60'
+                                                }
+                                            `}
+                                        >
+                                            {name}
+                                        </button>
+                                    );
+                                })}
+                            </div>
+                        </div>
+                    )}
+
                     {/* Add to Cart + Favourite */}
-                    <AddToCartButton product={product} effectivePrice={effectivePrice} />
+                    <AddToCartButton
+                        product={product}
+                        effectivePrice={effectivePrice}
+                        availableSizes={sizes}
+                        selectedSize={selectedSize || undefined}
+                    />
                     <FavoriteButton
                         productId={product._id}
                         isFavorited={isFavorited}

@@ -5,6 +5,7 @@ import { getCurrentSession } from "@/actions/auth";
 import { getOrCreateCart } from "./cart-actions";
 import { validatePromoCode } from "./promo-actions";
 import { getShippingForProducts } from "./shipping-actions";
+import { rateLimit } from "@/lib/rate-limit";
 
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
     apiVersion: "2026-05-27.dahlia",
@@ -18,6 +19,18 @@ const DELIVERY_ESTIMATE = {
 
 export const createCheckoutSession = async (cartId: string, promoCode?: string) => {
     const { user } = await getCurrentSession();
+
+    if (!user) {
+        throw new Error("Please sign in to continue to checkout.");
+    }
+
+    // Limit checkout session creation to 5 per minute per user to prevent
+    // Stripe resource abuse.
+    const limited = rateLimit(`user:${user.id}:checkout`, 5, 60_000);
+    if (!limited.allowed) {
+        throw new Error("Too many checkout attempts. Please try again shortly.");
+    }
+
     const cart = await getOrCreateCart(cartId);
 
     if (cart.items.length === 0) {
@@ -69,7 +82,7 @@ export const createCheckoutSession = async (cartId: string, promoCode?: string) 
             price_data: {
                 currency: 'myr',
                 product_data: {
-                    name: item.title,
+                    name: item.size ? `${item.title} (${item.size})` : item.title,
                     images: [item.image]
                 },
                 unit_amount: Math.round(item.price * 100)
@@ -79,10 +92,10 @@ export const createCheckoutSession = async (cartId: string, promoCode?: string) 
         ...(discounts ? { discounts } : {}),
         success_url: `${process.env.NEXT_PUBLIC_BASE_URL!}/checkout/success?session_id={CHECKOUT_SESSION_ID}`,
         cancel_url: `${process.env.NEXT_PUBLIC_BASE_URL!}`,
-        customer_email: user?.email,
+        customer_email: user.email,
         metadata: {
             cartId: cart.id,
-            userId: user?.id?.toString() || '-'
+            userId: user.id.toString()
         },
         shipping_address_collection: {
             allowed_countries: ['MY', 'SG', 'BN']

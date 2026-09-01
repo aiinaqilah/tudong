@@ -2,6 +2,7 @@
 
 import { getCurrentSession } from "@/actions/auth";
 import { getSellerBrand } from "@/sanity/lib/client";
+import { sellerSettingsSchema } from "@/lib/validation";
 
 const WRITE_CLIENT_CONFIG = {
   projectId: process.env.NEXT_PUBLIC_SANITY_PROJECT_ID!,
@@ -51,6 +52,11 @@ export async function updateSellerSettings(data: SellerSettings) {
   if (role !== "seller" && role !== "admin")
     return { error: "Not authorized" };
 
+  const parsed = sellerSettingsSchema.safeParse(data);
+  if (!parsed.success) return { error: "Invalid seller settings" };
+
+  const valid = parsed.data;
+
   const brand = await getSellerBrand(user.id);
   if (!brand) return { error: "No brand linked to your account" };
 
@@ -58,8 +64,8 @@ export async function updateSellerSettings(data: SellerSettings) {
   await writeClient
     .patch(brand._id)
     .set({
-      sellerName: data.sellerName,
-      defaultShippingPrice: data.defaultShippingPrice,
+      sellerName: valid.sellerName,
+      defaultShippingPrice: valid.defaultShippingPrice,
     })
     .commit();
 

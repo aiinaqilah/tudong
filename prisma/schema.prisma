@@ -64,14 +64,15 @@ model Account {
 }
 
 model CartLineItem {
-  id              String @id @default(cuid())
+  id              String  @id @default(cuid())
   sanityProductId String
   quantity        Int
   title           String
   price           Float
   image           String
+  size            String?
   cartId          String
-  cart            Cart   @relation(fields: [cartId], references: [id], onDelete: Cascade)
+  cart            Cart    @relation(fields: [cartId], references: [id], onDelete: Cascade)
 
   @@index([cartId])
 }

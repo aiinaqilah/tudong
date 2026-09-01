@@ -1,5 +1,6 @@
 import { getUserOrders, confirmOrderDelivered } from "@/actions/order-actions";
 import Link from "next/link";
+import ConfirmForm from "@/components/ui/ConfirmForm";
 
 export default async function UserOrdersPage() {
   const orders = await getUserOrders();
@@ -81,6 +82,7 @@ export default async function UserOrdersPage() {
                     <div className="min-w-0">
                       <p className="text-sm font-medium text-gray-900 truncate">
                         {item.productTitle ?? "Product"}
+                        {item.size ? ` (${item.size})` : ""}
                       </p>
                       <p className="text-xs text-gray-400 mt-0.5">
                         Qty: {item.quantity} × RM {item.price.toFixed(2)}
@@ -128,14 +130,17 @@ export default async function UserOrdersPage() {
                   </div>
 
                   {order.status === "SHIPPED" && (
-                    <form action={confirmOrderDelivered.bind(null, order._id)}>
+                    <ConfirmForm
+                      action={confirmOrderDelivered.bind(null, order._id)}
+                      confirmMessage="Have you received this order? This cannot be undone."
+                    >
                       <button
                         type="submit"
                         className="text-xs font-semibold text-white bg-green-600 hover:bg-green-700 px-4 py-1.5 rounded-full transition-colors"
                       >
                         Order Received
                       </button>
-                    </form>
+                    </ConfirmForm>
                   )}
                   {order.status === "DELIVERED" && (
                     <span className="text-xs font-semibold text-green-700 bg-green-100 px-4 py-1.5 rounded-full">

@@ -31,11 +31,12 @@ export default function QuickAddButton({ product, effectivePrice }: Props) {
     setStatus("loading");
     const firstImage = Array.isArray(product.image) ? product.image[0] : product.image;
     await addItem({
-      id: product._id,
-      title: product.title,
-      price: effectivePrice ?? product.price,
-      image: firstImage ? urlFor(firstImage).url() : "",
-      quantity: 1,
+        sanityProductId: product._id,
+        id: product._id,
+        title: product.title,
+        price: effectivePrice ?? product.price,
+        image: firstImage ? urlFor(firstImage).url() : "",
+        quantity: 1,
     });
     setStatus("added");
     open();

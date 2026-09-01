@@ -8,23 +8,40 @@ type DBCartItem = {
     price: number;
     quantity: number;
     image: string;
+    size?: string | null;
+};
+
+const makeLineKey = (sanityProductId: string, size?: string | null) =>
+    size ? `${sanityProductId}::${size}` : sanityProductId;
+
+const splitLineKey = (key: string) => {
+    const idx = key.lastIndexOf('::');
+    if (idx === -1) return { sanityProductId: key, size: undefined as string | undefined };
+    return {
+        sanityProductId: key.slice(0, idx),
+        size: key.slice(idx + 2) || undefined,
+    };
 };
 
 const mapDBItems = (items: DBCartItem[]): CartItem[] =>
     items.map((item) => ({
-        id: item.sanityProductId,
+        id: makeLineKey(item.sanityProductId, item.size),
+        sanityProductId: item.sanityProductId,
         title: item.title,
         price: item.price,
         quantity: item.quantity,
         image: item.image,
+        size: item.size ?? undefined,
     }));
 
 export type CartItem = {
     id: string;
+    sanityProductId: string;
     title: string;
     price: number;
     quantity: number;
     image: string;
+    size?: string;
 };
 
 type CartStore = {
@@ -56,31 +73,36 @@ export const useCartStore = create<CartStore>()(
             setStore: (store) => set(store),
 
             addItem: async (item) => {
-                const { cartId } = get();
+                let { cartId } = get();
                 if (!cartId) {
-                    return;
+                    const cart = await getOrCreateCart();
+                    cartId = cart.id;
+                    set((state) => ({ ...state, cartId: cart.id, items: mapDBItems(cart.items) }));
                 }
 
-                const updatedCart = await updateCartItem(cartId, item.id, {
+                const id = makeLineKey(item.sanityProductId, item.size);
+
+                const updatedCart = await updateCartItem(cartId, item.sanityProductId, {
                     title: item.title,
                     price: item.price,
                     image: item.image,
                     quantity: item.quantity,
-                });
+                }, item.size);
+                if (!updatedCart) return;
 
                 set((state) => {
-                    const existingItem = state.items.find((i) => i.id === item.id);
+                    const existingItem = state.items.find((i) => i.id === id);
                     if(existingItem) {
                         return {
                             ...state,
                             cartId: updatedCart.id,
-                            items: state.items.map((i) => i.id === item.id ? { ...i, quantity: i.quantity + item.quantity} : i)
+                            items: state.items.map((i) => i.id === id ? { ...i, quantity: i.quantity + item.quantity} : i)
                         }
                     }
                     return {
                         ...state,
                         cartId: updatedCart.id,
-                        items: [...state.items, { ...item }],
+                        items: [...state.items, { ...item, id }],
                     };
                 });
             },
@@ -91,9 +113,12 @@ export const useCartStore = create<CartStore>()(
                     return;
                 }
 
-                const updatedCart = await updateCartItem(cartId, id, {
+                const { sanityProductId, size } = splitLineKey(id);
+
+                const updatedCart = await updateCartItem(cartId, sanityProductId, {
                     quantity: 0,
-                });
+                }, size);
+                if (!updatedCart) return;
 
                 set((state) => {
                     return {
@@ -110,9 +135,12 @@ export const useCartStore = create<CartStore>()(
                     return;
                 }
 
-                const updatedCart = await updateCartItem(cartId, id, {
+                const { sanityProductId, size } = splitLineKey(id);
+
+                const updatedCart = await updateCartItem(cartId, sanityProductId, {
                     quantity: quantity,
-                });
+                }, size);
+                if (!updatedCart) return;
 
                 set((state) => ({
                     ...state,

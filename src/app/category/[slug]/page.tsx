@@ -1,8 +1,6 @@
-// import SalesCampaignBanner from '@/components/layout/SalesCampaignBanner';
 import ProductGrid from '@/components/product/ProductGrid';
-import { getCategoryBySlug, getProductsByCategorySlug, getActiveCampaigns } from '@/sanity/lib/client';
+import { getCategoryBySlug, getProductsByCategorySlug } from '@/sanity/lib/client';
 import { getUserFavorites } from '@/actions/favorite-actions';
-import { computeCampaignMap } from '@/lib/utils';
 import React from 'react';
 
 import { notFound } from 'next/navigation';
@@ -13,15 +11,13 @@ type CategoryPageProps = {
 const CategoryPage = async ({ params }: CategoryPageProps) => {
     const { slug } = await params;
 
-    const [category, products, campaigns, favorites] = await Promise.all([
+    const [category, products, favorites] = await Promise.all([
         getCategoryBySlug(slug),
         getProductsByCategorySlug(slug),
-        getActiveCampaigns(),
         getUserFavorites(),
     ]);
 
     const favoriteIds = new Set(favorites.map((f) => f.productId));
-    const campaignMap = computeCampaignMap(products, campaigns);
 
     if (!category) {
         notFound();
@@ -29,8 +25,6 @@ const CategoryPage = async ({ params }: CategoryPageProps) => {
 
     return (
         <div>
-            {/* <SalesCampaignBanner /> */}
-
             {/* Category header */}
             <div className='bg-secondary py-12 text-center'>
                 <p className='text-muted-foreground text-xs font-medium uppercase tracking-[0.2em] mb-3'>
@@ -50,7 +44,7 @@ const CategoryPage = async ({ params }: CategoryPageProps) => {
             </div>
 
             <section className='container mx-auto py-10 px-6 sm:px-8'>
-                <ProductGrid products={products} favoriteIds={favoriteIds} campaignMap={campaignMap} />
+                <ProductGrid products={products} favoriteIds={favoriteIds} />
             </section>
         </div>
     );

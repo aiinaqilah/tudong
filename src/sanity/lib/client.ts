@@ -51,7 +51,15 @@ export const getProductsByCategorySlug = async (slug: string) => {
 }
 
 export const getProductById = async (id: string) => {
-  const query = `*[_type == "product" && _id == $id][0]`;
+  const query = `*[_type == "product" && _id == $id][0]{
+    ...,
+    "sizes": size[]->{ _id, name },
+    image[]{
+      _key,
+      _type,
+      asset->
+    }
+  }`;
   return client.fetch<Product>(query, { id }, { next: { revalidate: REVALIDATE_PRODUCTS } });
 }
 
@@ -65,28 +73,8 @@ export const searchProducts = async (searchQuery: string) => {
   return client.fetch<Product[]>(query, { searchQuery }, { cache: 'no-store' });
 }
 
-export const getActiveCampaigns = async () => {
-  const query = `*[_type == "promotionCampaign" && isActive == true && startDate <= now() && endDate >= now()]{
-    _id,
-    title,
-    discountType,
-    discountValue,
-    "productRefs": products[]._ref
-  }`;
-  return client.fetch<Array<{
-    _id: string;
-    title: string;
-    discountType: 'percentage' | 'fixed';
-    discountValue: number;
-    productRefs: string[] | null;
-  }>>(query, {}, { next: { revalidate: REVALIDATE_PRODUCTS } });
-}
-
 export const getSaleProducts = async () => {
-  const query = `*[_type == "product" && (
-    _id in *[_type == "promotionCampaign" && isActive == true && startDate <= now() && endDate >= now()].products[]._ref
-    || (discount != null && discount > 0)
-  )]{
+  const query = `*[_type == "product" && (discount != null && discount > 0)]{
     ...,
     image[]{
       _key,

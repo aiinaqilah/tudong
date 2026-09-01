@@ -1,6 +1,6 @@
 import { Resend } from "resend";
 
-const FROM = "onboarding@resend.dev";
+const FROM = process.env.RESEND_FROM_EMAIL || "onboarding@resend.dev";
 
 export async function sendShippedEmail({
   to,
