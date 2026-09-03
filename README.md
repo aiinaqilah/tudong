@@ -18,4 +18,5 @@ npm run dev
 ```
 Open http://localhost:3000. The Sanity Studio is available at http://localhost:3000/studio.
 
-For live demonstration of the application deployed in Vercel, visit the link: https://tudong.vercel.app/
+For live demonstration of the application deployed in Vercel, visit the link: (https://temu2-self.vercel.app/)
+
